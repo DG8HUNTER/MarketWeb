@@ -21,7 +21,7 @@ const q = query(collection(db, "Products"), where("storeId", "==", data));
 const unsubscribe = onSnapshot(q, (querySnapshot) => {
   const products = [];
   querySnapshot.forEach((doc) => {
-      products.push({id: doc.id, ...doc.data()});
+      products.push({productId: doc.id, ...doc.data()});
   });
   setProducts(products);
 
@@ -73,7 +73,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
          </thead>
          <tbody >
           {products.map((product) => (
-          <tr key={product.id} className={"text-center flex align-middle"} onClick={()=>navigate(`/productInfo/${product.id}`)}>
+          <tr key={product.productId} className={"text-center flex align-middle"} onClick={()=>navigate(`/productInfo/${product.productId}`)}>
          <td  className="d-flex align-items-center justify-content-center" >  
           <Image src={product.image} thumbnail  width={45} height={45}   />
         </td>

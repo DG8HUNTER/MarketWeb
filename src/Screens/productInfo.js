@@ -1,33 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getDoc , query,collection, where, getDocs ,doc } from 'firebase/firestore'; // Assuming Firebase v9
-import { db } from '../firebase.js';
+import { getDoc , query,collection, where, getDocs ,doc ,updateDoc} from 'firebase/firestore'; // Assuming Firebase v9
+import { db  } from '../firebase.js';
 import { Table ,Image,Col , label , input , textarea} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { getDownloadURL, ref, uploadBytes ,getStorage  , uploadBytesResumable} from 'firebase/storage';
 
 export default  function ProductInfo() {
   const { data: productId } = useParams(); // Extract product ID from route parameter
   const [productInfo, setProductInfo] = useState(null);
    const [selectedImage, setSelectedImage] = useState(null);
+   console.log(productInfo)
 
   const handleDragOver = (event) => {
     event.preventDefault();
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const droppedFile = event.dataTransfer.files[0];
-
-    if (!droppedFile.type.match('image/.*')) {
-      alert('Please select an image file.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setSelectedImage(e.target.result);
-    };
-    reader.readAsDataURL(droppedFile);
   };
 
   const handleFileChange = (event) => {
@@ -46,9 +32,84 @@ export default  function ProductInfo() {
     };
     reader.readAsDataURL(droppedFile);
   };
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const droppedFile = event.dataTransfer.files[0];
 
-   // State for product data
-  console.log(productId)
+    if (!droppedFile.type.match('image/.*')) {
+      alert('Please select an image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelectedImage(e.target.result);
+      setProductInfo({...productInfo,image:droppedFile})
+
+    };
+    reader.readAsDataURL(droppedFile);
+  };
+
+  const handleUpdate = async () => {
+  
+
+    const storage = getStorage(); // Initialize Storage instance (once outside the function)
+
+    try {
+      // Create a unique filename (optional)
+      const filename = `\{productId}_${productInfo.name}.png`;
+
+      // Create a storage reference
+      const storageRef = ref(storage, `product_images/${filename}`);
+
+      // Handle file conversion if needed (if using DataURL from handleDrop)
+      const imageBlob = selectedImage instanceof Blob ? selectedImage : await fetch(selectedImage).then(r => r.blob());
+
+      // Upload the image Blob to Firebase Storage
+      const uploadTask = uploadBytesResumable(storageRef, imageBlob, {
+        contentType: 'image/jpeg' // Specify image type
+      });
+
+      // Monitor upload progress (optional)
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload progress:', progress + '%');
+        },
+        (error) => {
+          console.error('Error uploading image:', error);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log('Image URL:', downloadURL);
+
+          setProductInfo({...productInfo , image:downloadURL})
+          
+
+          // Update the product document with the new image URL
+          const productDocRef = doc(db, "Products", productId);
+          await updateDoc(productDocRef, {
+            // Update relevant product fields
+            "discount": parseInt(productInfo.discount),
+            "image": downloadURL,
+            "name": productInfo.name,
+            "inventory": parseInt(productInfo.inventory),
+            "description": productInfo.description,
+            "category": productInfo.category,
+            // ...other product fields
+          });
+
+          console.log('Product updated successfully!');
+        }
+      );
+    } catch (error) {
+      console.error('Error updating product:', error);
+      // Display a user-friendly error message here if needed
+    } finally {
+      // Reset upload state (optional)
+      setSelectedImage(null); // Clear selected image after upload
+    }
+  }
 
 
   // Fetch product data from Firebase on component mount and whenever productId changes
@@ -61,7 +122,7 @@ export default  function ProductInfo() {
           const docSnap = await getDoc(docRef);
 
        if(docSnap!=null){
-        setProductInfo({id:docSnap.id , ...docSnap.data()});   
+        setProductInfo({productId:docSnap.id , ...docSnap.data()});   
          
        
     
@@ -83,42 +144,42 @@ export default  function ProductInfo() {
   return (
     
     <div className={"p-4 vh-100 "}>
-        <h2 class={"mb-4"}>Product Info </h2>
+        <h2 className={"mb-4"}>Product Info </h2>
       {productInfo!=null ? (
 <div class=" col-12  d-md-flex justify-content-md-between  align-items-md-center  ">
 <form class="row g-3 col-md-6 px-2 py-4 shadow-lg  bg-body rounded h-auto">
   <div class="col-md-6">
-    <label for="productName" class="form-label ">Name</label>
-    <input type="text" class="form-control " id="productName" value={productInfo.name} placeholder='Product Name' onChange={(prev)=>setProductInfo({...prev , name:this})}/>
+    <label htmlFor="productName" class="form-label ">Name</label>
+    <input type="text" class="form-control " id="productName" value={productInfo.name} placeholder='Product Name' onChange={(event) => setProductInfo({ ...productInfo, name: event.target.value })}/>
   </div>
 
 
   <div class="col-md-6">
-    <label for="price" class="form-label">Price $</label>
+    <label htmlFor="price" class="form-label">Price $</label>
   <div class="input-group mb-3">
   <span class="input-group-text">$</span>
-  <input type="number" class="form-control" id="price"  min={0} value={productInfo.price} placeholder="Price"  onChange={(prev)=>setProductInfo({...prev , price:this})} />
+  <input type="number" class="form-control" id="price"  min={0} value={productInfo.price} placeholder="Price"  onChange={(event) => setProductInfo({ ...productInfo, price: event.target.value })} />
 </div>
   </div>
   <div class="col-md-6">
-    <label for="Discount" class="form-label">Discount %</label>
-    <input type="number" min={0} max={100} class="form-control" id="Discount" placeholder="Discount" value={productInfo.discount} onChange={(prev)=>setProductInfo({...prev , discount:this})} / >
+    <label htmlFor="Discount" class="form-label">Discount %</label>
+    <input type="number" min={0} max={100} class="form-control" id="Discount" placeholder="Discount" value={productInfo.discount}  onChange={(event) => setProductInfo({ ...productInfo, discount: event.target.value })} / >
   </div>
   <div class="col-md-6">
-    <label for="Category" class="form-label">Category</label>
-    <input type="text" class="form-control" id="Category" placeholder="Category" value={productInfo.category} onChange={(prev)=>setProductInfo({...prev , category:this})} />
+    <label htmlFor="Category" class="form-label">Category</label>
+    <input type="text" class="form-control" id="Category" placeholder="Category" value={productInfo.category}  onChange={(event) => setProductInfo({ ...productInfo, category: event.target.value })} />
   </div>
   <div class="col-md-12 ">
-    <label for="Inventroy" class="form-label">Inventory</label>
-    <input type="text"   class="form-control  " id="Inventory" value={productInfo.inventory} onChange={(prev)=>setProductInfo({...prev , inventory:this})} />
+    <label htmlFor="Inventroy" class="form-label">Inventory</label>
+    <input type="text"   class="form-control  " id="Inventory" value={productInfo.inventory}  onChange={(event) => setProductInfo({ ...productInfo, inventory: event.target.value })} />
   </div>
   <div class="col-md-12 ">
-    <label for="Description" class="form-label">Description</label>
-    <textarea type="text" rows="3"  class="form-control  " id="Description" value={productInfo.description} onChange={(prev)=>setProductInfo({...prev , description:this})} />
+    <label htmlFor="Description" class="form-label">Description</label>
+    <textarea type="text" rows="3"  class="form-control  " id="Description" value={productInfo.description}  onChange={(event) => setProductInfo({ ...productInfo, description: event.target.value })} />
   </div>
   
   <div class="col-12 mt-5">
-    <button type="submit" class="btn btn-primary w-100">Update</button>
+    <button type="button" class="btn btn-primary w-100" onClick={handleUpdate}>Update</button>
   </div>
 </form>
 

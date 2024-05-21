@@ -5,7 +5,7 @@ import { db  } from '../firebase.js';
 import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { getDownloadURL, ref, uploadBytes ,getStorage  , uploadBytesResumable} from 'firebase/storage';
-import upload from "../Images/uploadImage2.png"
+import upload from "../Images/add_photo_alternate_outlined.svg"
 
 
 export default  function AddProduct() {
@@ -135,8 +135,8 @@ export default  function AddProduct() {
   // Display product info or loading/error message
   return (
     
-    <div className={"p-4  vh-100 "}>
-        <h2 className={"mb-4"}>Add Product</h2>
+    <div class={" vh-100  p-4"}>
+        <h2 class={"mb-5"}>Add Product</h2>
       
 <div class=" col-12  d-md-flex justify-content-md-between  align-items-md-center  ">
 <form class="row g-3 col-md-6 px-2 py-4 shadow-lg  bg-body rounded h-auto">
@@ -189,14 +189,11 @@ export default  function AddProduct() {
   </div>
   
   <div class="col-12 mt-5">
-    <button type="button" class="btn btn-primary w-100" onClick={handleUpdate} disabled={!(productInfo.name!=null && productInfo.price!=null && productInfo.discount!=null && productInfo.inventory!=null && productInfo.description!=null && productInfo.image!=null)} >{ adding ? "Adding Product ..." : "Add Product"}</button>
+    <button type="button" class="btn btn-primary w-100" onClick={handleUpdate} disabled={!(productInfo.name!=null && productInfo.category !=null && productInfo.price!=null && productInfo.discount!=null && productInfo.inventory!=null && productInfo.description!=null && productInfo.image!=null)} >{ adding ? "Adding Product ..." : "Add Product"}</button>
   </div>
 </form>
 
 <div class={" image-uploader col-md-6 d-flex flex-column  justify-content-center align-items-center mt-4 mt-md-0"}  onDragOver={handleDragOver}   onDrop={handleDrop}>
-    
-
-
     
     <Col xs={6} sm={6} md={8} lg={7} xl={6}  > {/* Responsive breakpoints */}
       <Image src={ productInfo.image!=null ? productInfo.image : upload } width={"400px"}  height={"400px"} className="rounded" alt="Product Image" />

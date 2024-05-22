@@ -151,14 +151,10 @@ export default  function ProductInfo() {
           const docSnap = await getDoc(docRef);
 
        if(docSnap!=null){
-        setProductInfo({productId:docSnap.id , ...docSnap.data()});  
-
-         
-       
+        setProductInfo({productId:docSnap.id , ...docSnap.data()});     
     
     }
-       
-        
+          
       
       } catch (error) {
         console.error('Error fetching product info:', error); // Handle errors

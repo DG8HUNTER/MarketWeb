@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.text-monthly-orders {
+  @apply text-blue-700 font-bold; /* Blue color for monthly orders */
+}
+
+.text-monthly-income {
+  @apply text-green-500 font-bold; /* Green color for monthly income */
+}

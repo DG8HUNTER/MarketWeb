@@ -9,8 +9,9 @@ import upload from "../Images/add_photo_alternate_outlined.svg"
 
 
 export default  function AddProduct() {
-  const { data: storeId } = useParams(); // Extract product ID from route parameter
+  const { data } = useParams(); // Extract product ID from route parameter
   const [productInfo, setProductInfo] = useState({});
+  const storeId = "AV392AHNNg8TZf5IoOKg";
   const [adding,setAdding]=useState(false)
    const [selectedImage, setSelectedImage] = useState(null);
    const [showToast, setShowToast] = useState(false);
@@ -93,12 +94,20 @@ export default  function AddProduct() {
           // Update the product document with the new image URL
 
           const docRef = await addDoc(collection(db, "Products"), {
-            ...productInfo,storeId:""
+            "discount": parseInt(productInfo.discount),
+            "image": downloadURL,
+            "name": productInfo.name,
+            "inventory": parseInt(productInfo.inventory),
+            "description": productInfo.description,
+            "category": productInfo.category,
+            "price": parseFloat(productInfo.price),
+            "profitPerItem":parseFloat(productInfo.profitPerItem),
+            "storeId":storeId
           });
 
           if(docRef!=null){
             await updateDoc(doc(db, "Products", docRef.id), {
-                productID: docRef.id  // Use the generated document ID as the productID
+                productId: docRef.id  // Use the generated document ID as the productID
               });
               setAdding(false)
               setShowToast(true)
@@ -147,6 +156,13 @@ export default  function AddProduct() {
   setProductInfo({ ...productInfo, name: newValue });
 }}/>
   </div>
+  <div class="col-md-6">
+    <label htmlFor="Category" class="form-label">Category</label>
+    <input type="text" class="form-control" id="Category" placeholder="Category" value={productInfo.category}  onChange={(event) => {
+  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
+  setProductInfo({ ...productInfo,  category: newValue });
+}} />
+  </div>
 
 
   <div class="col-md-6">
@@ -159,6 +175,26 @@ export default  function AddProduct() {
 }} />
 </div>
   </div>
+
+  <div class="col-md-6">
+    <label htmlFor="ppi" class="form-label">Profit Per Item $</label>
+  <div class="input-group mb-3">
+  <span class="input-group-text">$</span>
+  <input type="text" class="form-control" id="ppi"  min={0} value={productInfo.profitPerItem} placeholder="Profit Per Item"  onChange={(event) => {
+  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
+  setProductInfo({ ...productInfo, profitPerItem: newValue });
+}} />
+</div>
+  </div>
+
+  <div class="col-md-6 ">
+    <label htmlFor="Inventroy" class="form-label">Inventory</label>
+    <input type="text"   class="form-control  " id="Inventory" value={productInfo.inventory} onChange={(event) => {
+  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
+  setProductInfo({ ...productInfo, inventory: newValue });
+}} />
+  </div>
+
   <div class="col-md-6">
     <label htmlFor="Discount" class="form-label">Discount %</label>
     <input type="number" min={0} max={100} class="form-control" id="Discount" placeholder="Discount" value={productInfo.discount}  onChange={(event) => {
@@ -166,20 +202,8 @@ export default  function AddProduct() {
   setProductInfo({ ...productInfo, discount: newValue });
 }} / >
   </div>
-  <div class="col-md-6">
-    <label htmlFor="Category" class="form-label">Category</label>
-    <input type="text" class="form-control" id="Category" placeholder="Category" value={productInfo.category}  onChange={(event) => {
-  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
-  setProductInfo({ ...productInfo,  category: newValue });
-}} />
-  </div>
-  <div class="col-md-12 ">
-    <label htmlFor="Inventroy" class="form-label">Inventory</label>
-    <input type="text"   class="form-control  " id="Inventory" value={productInfo.inventory} onChange={(event) => {
-  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
-  setProductInfo({ ...productInfo, inventory: newValue });
-}} />
-  </div>
+
+
   <div class="col-md-12 ">
     <label htmlFor="Description" class="form-label">Description</label>
     <textarea type="text" rows="3"  class="form-control  " id="Description" value={productInfo.description}  onChange={(event) => {

@@ -114,6 +114,7 @@ export default  function ProductInfo() {
             "name": productInfo.name,
             "inventory": parseInt(productInfo.inventory),
             "description": productInfo.description,
+            "profitPerItem" : parseInt(productInfo.profitPerItem),
             "category": productInfo.category,
             // ...other product fields
           });
@@ -195,6 +196,14 @@ export default  function ProductInfo() {
   setProductInfo({ ...productInfo, name: newValue });
 }} />
               </div>
+
+              <div class="col-md-6">
+    <label htmlFor="Category" class="form-label">Category</label>
+    <input type="text" class="form-control" id="Category" placeholder="Category" value={productInfo.category}  onChange={(event) => {
+  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
+  setProductInfo({ ...productInfo,  category: newValue });
+}} />
+  </div>
               <div class="col-md-6">
     <label htmlFor="price" class="form-label">Price $</label>
   <div class="input-group mb-3">
@@ -202,6 +211,18 @@ export default  function ProductInfo() {
   <input type="number" class="form-control" id="price"  min={0} value={productInfo.price} placeholder="Price" onChange={(event) => {
   const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
   setProductInfo({ ...productInfo, price: newValue });
+}} />
+</div>
+
+  </div>
+
+  <div class="col-md-6">
+    <label htmlFor="ppi" class="form-label">Profit Per Item $</label>
+  <div class="input-group mb-3">
+  <span class="input-group-text">$</span>
+  <input type="number" class="form-control" id="ppi"  min={0} value={productInfo.profitPerItem} placeholder="Profit Per Item"  onChange={(event) => {
+  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
+  setProductInfo({ ...productInfo, profitPerItem: newValue });
 }} />
 </div>
   </div>
@@ -212,14 +233,8 @@ export default  function ProductInfo() {
   setProductInfo({ ...productInfo, discount: newValue });
 }} / >
   </div>
-  <div class="col-md-6">
-    <label htmlFor="Category" class="form-label">Category</label>
-    <input type="text" class="form-control" id="Category" placeholder="Category" value={productInfo.category}  onChange={(event) => {
-  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
-  setProductInfo({ ...productInfo,  category: newValue });
-}} />
-  </div>
-  <div class="col-md-12 ">
+
+  <div class="col-md-6 ">
     <label htmlFor="Inventroy" class="form-label">Inventory</label>
     <input type="text"   class="form-control  " id="Inventory" value={productInfo.inventory}  onChange={(event) => {
   const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string

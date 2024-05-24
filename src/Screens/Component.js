@@ -74,7 +74,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
 
 <div class="card mt-2 shadow  col-2">
   <div class="card-body ">
-    <h5 class="card-title">#Monthly month </h5>
+    <h5 class="card-title">#Monthly Orders </h5>
     <p class="card-text font-weight-bold h3" style={{ color: '#007bff' }}>{currentOrders}</p>
   </div>
 </div>

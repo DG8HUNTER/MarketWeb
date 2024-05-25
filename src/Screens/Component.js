@@ -15,6 +15,7 @@ function MyComponent() {
   const [orders , setOrders] = useState(0)
   const [currentOrders , setCurrentOrdes]=useState(0)
   const [income , setIncome] = useState(0)
+  const [profit , setProfit] = useState(0)
 
   const handleButtonClick = (data) => {
     navigate(`/products/${data}`); // Include data as a parameter
@@ -24,7 +25,7 @@ function MyComponent() {
     navigate(`/addProduct/${data}`); // Include data as a parameter
   };
 
-  const storeId = "6j28deWMTBoczaryF3F6"
+  const storeId = "AV392AHNNg8TZf5IoOKg"
 
   const today = new Date();
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -36,7 +37,8 @@ function MyComponent() {
 const unsubscribe = onSnapshot(q, (querySnapshot) => {
   const ord = [];
   const current =[]
-  let monthlyIncome = 0
+  let monthlyIncome = 0;
+  let monthlyProfit =0;
 
   querySnapshot.forEach((doc) => {
       ord.push(doc.id);
@@ -44,6 +46,13 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
       if(doc.data().createdAt.toDate() >= startOfMonth &&  doc.data().createdAt.toDate()<=endOfMonth ){
         current.push(doc.id)
         monthlyIncome+=doc.data().totalPrice;
+
+        //we have to see if the order is not cancelled or (pending 
+        if(doc.data().status!="cancelled" && doc.data().status!="pending"){
+          monthlyProfit+=doc.data().totalProfit;
+        }
+       
+
        
       }
   });
@@ -51,6 +60,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
   setOrders(ord.length)
   setCurrentOrdes(current.length)
   setIncome(monthlyIncome)
+  setProfit(monthlyProfit)
 }
 );
 
@@ -85,7 +95,16 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
     <p class="card-text font-weight-bold h3 "  style={{ color: '#28a745' }} >{income} $</p>
   </div>
 </div>
+<div class="card mt-2 shadow  col-2">
+  <div class="card-body ">
+    <h5 class="card-title">#Monthly Profit </h5>
+    <p class="card-text font-weight-bold h3 "  style={{ color: '#28a745' }} >{profit} $</p>
+  </div>
+</div>
+
    </div>
+
+   
 
 
 

@@ -76,7 +76,7 @@ export default  function ProductInfo() {
 
     try {
       // Create a unique filename (optional)
-      const filename = `\{productId}_${productInfo.name}.png`;
+      const filename = `/${productInfo.productId}_${productInfo.name}.png`;
 
       // Create a storage reference
       const storageRef = ref(storage, `product_images/${filename}`);
@@ -114,7 +114,8 @@ export default  function ProductInfo() {
             "name": productInfo.name,
             "inventory": parseInt(productInfo.inventory),
             "description": productInfo.description,
-            "profitPerItem" : parseInt(productInfo.profitPerItem),
+            "price":parseFloat(productInfo.price),
+            "profitPerItem" : parseFloat(productInfo.profitPerItem),
             "category": productInfo.category,
             // ...other product fields
           });
@@ -208,7 +209,7 @@ export default  function ProductInfo() {
     <label htmlFor="price" class="form-label">Price $</label>
   <div class="input-group mb-3">
   <span class="input-group-text">$</span>
-  <input type="number" class="form-control" id="price"  min={0} value={productInfo.price} placeholder="Price" onChange={(event) => {
+  <input type="text" class="form-control" id="price"  min={0} value={productInfo.price} placeholder="Price" onChange={(event) => {
   const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
   setProductInfo({ ...productInfo, price: newValue });
 }} />
@@ -220,7 +221,7 @@ export default  function ProductInfo() {
     <label htmlFor="ppi" class="form-label">Profit Per Item $</label>
   <div class="input-group mb-3">
   <span class="input-group-text">$</span>
-  <input type="number" class="form-control" id="ppi"  min={0} value={productInfo.profitPerItem} placeholder="Profit Per Item"  onChange={(event) => {
+  <input type="text" class="form-control" id="ppi"  min={0} value={productInfo.profitPerItem} placeholder="Profit Per Item"  onChange={(event) => {
   const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
   setProductInfo({ ...productInfo, profitPerItem: newValue });
 }} />

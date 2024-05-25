@@ -169,7 +169,7 @@ export default  function AddProduct() {
     <label htmlFor="price" class="form-label">Price $</label>
   <div class="input-group mb-3">
   <span class="input-group-text">$</span>
-  <input type="number" class="form-control" id="price"  min={0} value={productInfo.price} placeholder="Price"  onChange={(event) => {
+  <input type="text" class="form-control" id="price"  min={0} value={productInfo.price} placeholder="Price"  onChange={(event) => {
   const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
   setProductInfo({ ...productInfo, price: newValue });
 }} />

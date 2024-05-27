@@ -5,6 +5,7 @@ import TargetScreen from './Screens/products';
 import Products from './Screens/products';
 import ProductInfo from './Screens/productInfo';
 import AddProduct from './Screens/addproduct';
+import Orders from "./Screens/Orders"
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/products/:data" element={<Products />} />
         <Route path="/addproduct/:data" element={<AddProduct />} />
         <Route path="/productInfo/:data" element={<ProductInfo />}/>
+        <Route path="/orders/:data"  element ={<Orders/>}/>
       </Routes>
     </BrowserRouter>
   );

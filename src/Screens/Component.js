@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db  } from '../firebase.js';
 import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot} from 'firebase/firestore';
-import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer , button} from 'react-bootstrap';
+import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer , button , Badge} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -12,10 +12,13 @@ function MyComponent() {
 
   const navigate = useNavigate();
 
-  const [orders , setOrders] = useState(0)
+  const [ordersNum , setOrdersNum] = useState(0)
   const [currentOrders , setCurrentOrdes]=useState(0)
   const [income , setIncome] = useState(0)
   const [profit , setProfit] = useState(0)
+
+ 
+  
 
   const handleButtonClick = (data) => {
     navigate(`/products/${data}`); // Include data as a parameter
@@ -24,12 +27,19 @@ function MyComponent() {
   const addProduct = (data) => {
     navigate(`/addProduct/${data}`); // Include data as a parameter
   };
+  const orders = (data) => {
+    navigate(`/orders/${data}`); // Include data as a parameter
+  };
 
   const storeId = "AV392AHNNg8TZf5IoOKg"
 
   const today = new Date();
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+
+
+
 
 
 
@@ -57,7 +67,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
       }
   });
 
-  setOrders(ord.length)
+  setOrdersNum(ord.length)
   setCurrentOrdes(current.length)
   setIncome(monthlyIncome)
   setProfit(monthlyProfit)
@@ -65,10 +75,10 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
 );
 
 
-
-
-
   
+  
+
+
 
   return (
     <div class={"d-flex flex-column col-12 p-4"}>
@@ -78,7 +88,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
    <div class="card mt-2 shadow  col-2">
   <div class="card-body ">
     <h5 class="card-title">#Total Orders</h5>
-    <p class="card-text font-weight-bold h3" style={{ color: '#007bff' }}>{orders}</p>
+    <p class="card-text font-weight-bold h3" style={{ color: '#007bff' }}>{ordersNum}</p>
   </div>
 </div>
 
@@ -104,6 +114,8 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
 
    </div>
 
+
+
    
 
 
@@ -115,6 +127,12 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
       <button class={"btn btn-primary mt-4 col-3"} onClick={() => addProduct('AV392AHNNg8TZf5IoOKg')}>
        Add Product
       </button>
+
+      <button class={"btn btn-primary mt-4 col-3"} onClick={() => orders('AV392AHNNg8TZf5IoOKg')}>
+       Orders
+      </button>
+
+
 
 
 

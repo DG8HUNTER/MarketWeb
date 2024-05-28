@@ -86,7 +86,7 @@ return (
            </tr>
          </thead>
          <tbody >
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
           <tr key={order.orderId} className={"text-center flex align-middle"} >
          <td  className="d-flex align-items-center justify-content-center" >  
           {order.orderId}

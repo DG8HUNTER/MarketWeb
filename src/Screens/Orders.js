@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
-
+import { useNavigate } from 'react-router-dom';
 import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot, orderBy} from 'firebase/firestore'; // Assuming Firebase v9
 import { db  } from '../firebase.js';
 
@@ -10,6 +10,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function Orders() {
 const {data:storeId} = useParams()
+
+const navigate = useNavigate();
 
 const [orders, setOrders] = useState([]); 
 
@@ -115,7 +117,7 @@ return (
          </thead>
          <tbody >
           {filteredOrders.map((order) => (
-          <tr key={order.orderId} className={"text-center flex align-middle"} >
+          <tr key={order.orderId} onClick={()=> navigate(`/orderInfo/${order.orderId}`) } className={"text-center flex align-middle"} >
          <td  className="d-flex align-items-center justify-content-center text-center  " >  
           {order.orderId}
         </td>

@@ -20,6 +20,9 @@ const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 const [filteredOrders, setFilteredOrders] = useState([]);
 
+const [search , setSearch]=useState()
+const [toSearch , setToSearch]=useState()
+
 const toggleDropdown = () => {
   setIsDropdownOpen(!isDropdownOpen);
 };
@@ -41,21 +44,29 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
 });
 
 useEffect(() => {
+  if(toSearch!=null){
+    setFilteredOrders(orders.filter((order) => order.status === status && order.orderId==toSearch));
+
+
+  }else {
+    setFilteredOrders(orders.filter((order) => order.status === status));
+  }
    
-      setFilteredOrders(orders.filter((order) => order.status === status));
     
-  }, [orders, status]);
+    
+  }, [orders, status , toSearch]);
 
 
 
 return (
-    <div className={"p-4"}>
+    <div class={"p-3"}>
 
-
-
-    <div className="d-flex flex-row mb-4 justify-content-start align-items-center">
-      <h3>Store Orders</h3>
-      <div class="mx-3">
+      
+    <div className="d-flex  flex-column flex-md-row mb-4 justify-content-md-between align-items-md-center">
+    
+      <div class="d-flex   justify-content-md-start align-items-center col-7 col-md-auto">
+      <h3 class=" ms-2 ms-md-0 me-md-3 col-9 col-md-auto">Store Orders</h3>
+      
       <Dropdown  show={isDropdownOpen} onToggle={toggleDropdown}>
         <Dropdown.Toggle variant="primary">
           {status}
@@ -69,6 +80,23 @@ return (
           <Dropdown.Item   onClick={()=>setStatus("cancelled")}href="#">cancelled</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
+    </div>
+
+    <div class="d-flex justify-content-md-end mt-2 mt-md-0 align-items-center col-7 col-md-5 ">
+    <div class=" col-9 col-md-9 col-lg-8">
+    <label for="searchOrder" class="visually-hidden">Search</label>
+    <input type="text" class="form-control shadow" id="searchOrder" placeholder="Search for Order" value ={search} onChange={(event) => {
+  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
+  setSearch(newValue)
+  if(newValue==null){
+    setToSearch(null)
+  }
+
+}}/>
+  </div>
+  <div >
+    <button type="submit" class="btn btn-primary ms-2  "   onClick={()=> setToSearch(search)}>Search     </button>
+  </div>
     </div>
     </div>
   
@@ -88,7 +116,7 @@ return (
          <tbody >
           {filteredOrders.map((order) => (
           <tr key={order.orderId} className={"text-center flex align-middle"} >
-         <td  className="d-flex align-items-center justify-content-center" >  
+         <td  className="d-flex align-items-center justify-content-center text-center  " >  
           {order.orderId}
         </td>
           <td>{order.status}</td>

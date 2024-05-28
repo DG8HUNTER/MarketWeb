@@ -12,8 +12,9 @@ export default function OrderInfo() {
     const {data:orderId}=useParams();
     const [orderItems , setOrderItems]=useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
-    const [search , setSearch]=useState()
-const [toSearch , setToSearch]=useState()
+    const [search , setSearch]=useState("All")
+
+const [products , setProducts]=useState([])
 
 
 
@@ -24,37 +25,40 @@ const [toSearch , setToSearch]=useState()
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
       const ordrItems = [];
+      const prods =[]
     
       for (const document of querySnapshot.docs) {
         // Ensure document exists before accessing data
         if (document.exists) {
           const orderData = document.data(); // Use productData for readability
+
+          const productData = await getDoc(doc(db, "Products", orderData.productId));
     
           const ordrItem = {
             ...orderData,
-            productName: await getDoc(doc(db, "Products", orderData.productId)).then(
-              (docSnap) => (docSnap.exists ? docSnap.data().name : null)
-            ),
+            productName:productData.data().name
           };
     
           ordrItems.push(ordrItem);
+          prods.push(productData.data().name)
         } else {
           console.log("No such document!"); // Log for debugging
         }
       }
     
       setOrderItems(ordrItems);
+      setProducts(prods);
     });
 
 
 
       useEffect(() => {
-        if(toSearch!=null){
-          setFilteredOrders(orderItems.filter((order) => order.productName==toSearch));
+        if(search!="All"){
+          setFilteredOrders(orderItems.filter((order) => order.productName===search));
         }else {
             setFilteredOrders(orderItems)
         }   
-        }, [orderItems, toSearch])
+        }, [orderItems, search])
 
 
 
@@ -65,7 +69,6 @@ const [toSearch , setToSearch]=useState()
   return (
     <div class={"p-3"}>
 
-      
     <div className="d-flex  flex-column flex-md-row mb-4 justify-content-md-between align-items-md-center">
     
       <div class="d-flex   justify-content-md-start align-items-center col-7 col-md-auto">
@@ -77,22 +80,25 @@ const [toSearch , setToSearch]=useState()
     <div class="d-flex justify-content-md-end mt-2 mt-md-0 align-items-center col-7 col-md-5 ">
     <div class=" col-9 col-md-9 col-lg-8">
     <label for="searchOrder" class="visually-hidden">Search</label>
-    <input type="text" class="form-control shadow" id="searchOrder" placeholder="Search by product name" value ={search} onChange={(event) => {
-  const newValue = event.target.value === '' ? null : event.target.value; // Check for empty string
-  setSearch(newValue)
-  if(newValue==null){
-    setToSearch(null)
-  }
-
-}}/>
-  </div>
-  <div >
-    <button type="submit" class="btn btn-primary ms-2  "   onClick={()=> setToSearch(search)}>Search     </button>
+    <select
+  className="form-select form-select-sm shadow"
+  aria-label=".form-select-sm example"
+  value={search}
+  onChange={(event) => setSearch(event.target.value)}
+>
+  <option value="All">All</option>
+  {products.map((prod) => (
+    <option key={prod.id || prod} value={prod}>
+      {prod}
+    </option>
+  ))}
+</select>
   </div>
     </div>
     </div>
   
       {filteredOrders.length > 0 ? (
+      
         
          <Table striped bordered hover responsive  className={"shadow-sm "} draggable   >
 

@@ -109,6 +109,7 @@ return (
          <thead>
            <tr className={"text-center "}>
              <th>orderId</th>
+             <th>Delivery Address</th>
              <th>Status</th>
              <th>CreatedAt</th>
              <th>Total Items</th>
@@ -121,6 +122,7 @@ return (
          <td  className="d-flex align-items-center justify-content-center text-center  " >  
           {order.orderId}
         </td>
+        <td>{order.location}</td>
           <td>{order.status}</td>
          <td>{new Date(order.createdAt.seconds * 1000).toLocaleString('en-LB', {
   day: '2-digit',

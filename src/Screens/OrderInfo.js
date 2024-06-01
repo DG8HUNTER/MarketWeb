@@ -1,6 +1,7 @@
 
+
 import React, { useState , useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams , useNavigate } from 'react-router-dom'
 
 
 import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot, orderBy} from 'firebase/firestore'; // Assuming Firebase v9
@@ -12,16 +13,20 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function OrderInfo() {
     const {data:orderId}=useParams();
-    const [order ,setOrder]=useState({})
+    const [order ,setOrder]=useState({});
     const [orderItems , setOrderItems]=useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [search , setSearch]=useState("All")
     const [isUpdating , setIsUpdating]=useState()
     const [statusToUpdate , setStatusToUpdate]=useState()
-    const [showToast , setShowToast]= useState(false)
+    const [showToast , setShowToast]= useState(false);
+    const[isLoading , setIsLoading]=useState(true)
+    const [productsInOrders , setProductsInOrders]=useState([])
 
-const [products , setProducts]=useState([])
+const [products , setProducts]=useState([]);
 const [customerData , setCustomerData]=useState({});
+
+const navigate = useNavigate();
 
 
 
@@ -73,13 +78,59 @@ useEffect(() => {
 }, []);
 
     const storeId = "AV392AHNNg8TZf5IoOKg";
+
+
+
+
+
+   
+  
+    const q1 = query(collection(db, "Products"), where("storeId", "==", storeId));
+    const unsubscribe1 = onSnapshot(q1, (querySnapshot) => {
+      const products = [];
+      querySnapshot.forEach((doc) => {
+      
+          products.push({productId: doc.id, productName:doc.data().name});
+      });
+      setProducts(products);
+    
+    });
+
+    
+
+
     
 
     const q = query(collection(db, "OrderItems"), where("orderId", "==", orderId));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    
+      const ordrs = [];
+      const productsIn=[];
+      querySnapshot.forEach((doc) => {
+        if(doc!=null){
+       const product=  products.find((product)=> product.productId===doc.data().productId)
+       if (product) {
+        // Access product properties safely
+        ordrs.push({ ...doc.data(), productName: product.productName });
+        productsIn.push(product.productName);
+      }
+        
+        }
+          
+        
+      });
+      setOrderItems(ordrs);
+      setProductsInOrders(productsIn);
+      setIsLoading(false)
+    
+    });
 
 
 
-    useEffect(() => {
+    
+
+
+    /*useEffect(() => {
       const q = query(collection(db, "OrderItems"), where("orderId", "==", orderId));
   
       const unsubscribe = onSnapshot(q, async (querySnapshot) => {
@@ -109,14 +160,21 @@ useEffect(() => {
   
           setOrderItems(ordrItems);
           setProducts(prods);
+          setIsLoading(false)
       });
   
       return () => {
           console.log("Cleaning up snapshot listener");
           unsubscribe();
       };
-  }, []);
-  
+  }, []);*/
+
+
+
+
+
+
+
 
 
 
@@ -169,8 +227,8 @@ useEffect(() => {
         onChange={(event) => setSearch(event.target.value)}
       >
         <option value="All">All</option>
-        {products.map((prod) => (
-          <option key={prod.id || prod} value={prod}>
+        {productsInOrders.map((prod) => (
+          <option key={prod.productId || prod} value={prod}>
             {prod}
           </option>
         ))}
@@ -258,7 +316,7 @@ useEffect(() => {
          </thead>
          <tbody >
           {filteredOrders.map((order) => (
-          <tr key={order.orderId}  className={"text-center flex align-middle"} >
+          <tr key={order.orderItemId}    className={"text-center flex align-middle"} >
          <td  className="d-flex align-items-center justify-content-center text-center  " >  
           {order.orderItemId}
         </td>
@@ -270,12 +328,21 @@ useEffect(() => {
          
             
           
+
+
+         
           ))}
           </tbody>
          </Table>
       
       ) : (
-        <p>No Orders found.</p>
+        (
+          isLoading==true ? (
+            <p>Loading order info...</p>
+          ) : (
+            <p>Order not found.</p>
+          )
+        )
       )}
     </div>
   );

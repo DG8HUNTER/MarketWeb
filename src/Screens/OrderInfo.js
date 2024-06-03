@@ -4,12 +4,14 @@ import React, { useState , useEffect } from 'react'
 import { useParams , useNavigate } from 'react-router-dom'
 
 
-import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot, orderBy} from 'firebase/firestore'; // Assuming Firebase v9
+import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot, orderBy ,deleteDoc,FieldValue , increment} from 'firebase/firestore'; // Assuming Firebase v9
 import { db  } from '../firebase.js';
 
-import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer ,Spinner} from 'react-bootstrap';
+import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer ,Spinner , Button ,Form} from 'react-bootstrap';
 import { Circles } from 'react-loader-spinner';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+
 
 export default function OrderInfo() {
     const {data:orderId}=useParams();
@@ -22,6 +24,13 @@ export default function OrderInfo() {
     const [showToast , setShowToast]= useState(false);
     const[isLoading , setIsLoading]=useState(true)
     const [productsInOrders , setProductsInOrders]=useState([])
+    const[productName , setProductName]=useState()
+    const[quantity , setQuantity]=useState();
+    const[showModify ,setShowModify]=useState(false);
+    const[orderItemData,setOrderItemData]=useState({});
+    const[isDeleting,setIsDeleting]=useState(false);
+    const[showDeleteToast , setShowDeleteToast]=useState(false)
+  
 
 const [products , setProducts]=useState([]);
 const [customerData , setCustomerData]=useState({});
@@ -90,11 +99,28 @@ useEffect(() => {
       const products = [];
       querySnapshot.forEach((doc) => {
       
-          products.push({productId: doc.id, productName:doc.data().name});
+          products.push({productId: doc.id, productName:doc.data().name });
       });
       setProducts(products);
     
     });
+
+    const fetchOrderItemData = async (orderItemId)=>{
+      const docRef = doc(db, "OrderItems", orderItemId);
+     const docSnap = await getDoc(docRef);
+     setOrderItemData({...docSnap.data()})
+
+if (docSnap.exists()) {
+  const foundProduct = products.find(product => product.productId === docSnap.data().productId);
+  setProductName(foundProduct.productName)
+  setQuantity(docSnap.data().quantity)
+  setShowModify(true)
+} else {
+  // docSnap.data() will be undefined in this case
+  console.log("No such document!");
+}
+
+    }
 
     
 
@@ -124,6 +150,37 @@ useEffect(() => {
       setIsLoading(false)
     
     });
+const DeleteOrderItem = async ()=>{
+      setIsDeleting(true)
+
+ const orderRef = doc(db, "Orders", orderId);
+const orderData = await getDoc(orderRef)
+const totalProfit = parseFloat((orderData.data().totalProfit-orderItemData.totalProfit).toFixed(2)) ;
+const totalPrice = parseFloat((orderData.data().totalPrice -orderItemData.totalPrice).toFixed(2));
+const totalItems =orderData.data().totalItems-1
+
+
+
+await updateDoc(orderRef, {
+  totalPrice:totalPrice,
+  totalProfit:totalProfit,
+  totalItems:totalItems
+});
+
+await deleteDoc(doc(db, "OrderItems", orderItemData.orderItemId));
+
+setIsDeleting(false)
+setShowModify(false)
+setShowDeleteToast(true)
+
+setTimeout(() => {
+  setShowDeleteToast(false);
+  
+}, 2000);
+
+
+
+    }
 
 
 
@@ -201,6 +258,74 @@ useEffect(() => {
 
   return (
     <div class={"p-3"}>
+
+
+
+
+
+
+
+<Toast show={showModify} onClose={()=>setShowModify(false)} class="bg-white p-4 shadow" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000 }}>
+        <Toast.Header closeButton={true}>
+          <strong className="me-auto">Edit Data</strong>
+        </Toast.Header>
+        <Toast.Body>
+          <Form onSubmit={(e) => e.preventDefault()}>  {/* Wrap content in a Form for potential form validation */}
+            <div className="mb-3">
+              <Form.Label htmlFor="Product">Product</Form.Label>
+              <Form.Select
+                aria-label="Product Selection"
+                id="Product"
+                value={productName}
+                onChange={(event) => setProductName(event.target.value)}
+              >
+                
+                {productsInOrders.map((prod) => (
+                  <option key={prod.productId || prod} value={prod}>
+                    {prod}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+            <div className="mb-3">
+              <Form.Label htmlFor="quantity">Quantity</Form.Label>
+              <Form.Control
+                type="number"
+                id="quantity"
+                placeholder="Enter Quantity"
+                value={quantity}
+                min="1"
+                // Add validation and error handling as needed
+              />
+            </div>
+            <div className="d-flex justify-content-between align-items-center">
+              <Button variant="primary" size="sm" >
+                Update
+              </Button>
+              <Button variant="danger" size="sm" onClick={()=>DeleteOrderItem()}>
+                {isDeleting===true ? <div class="d-flex justify-content-between align-items-center" >
+                  Deleting
+                  <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
+      <span className="visually-hidden">Loading...</span>
+    </span>
+                </div> : "Delete"}
+              </Button>
+            </div>
+          </Form>
+        </Toast.Body>
+      </Toast>
+
+
+
+ <ToastContainer position="top-center">
+<Toast show={showDeleteToast} autohide   class="shadow bg-white"> {/* Added classes */}
+    <Toast.Header class="bg-white" closeButton={false} >
+      <strong className="me-auto">Notification</strong>
+    </Toast.Header>
+    <Toast.Body>Order Item  deleted  successfully</Toast.Body>
+  </Toast>
+    </ToastContainer>
+ 
       
       <ToastContainer position="top-center">
 <Toast show={showToast} autohide   class="shadow bg-white"> {/* Added classes */}
@@ -316,7 +441,7 @@ useEffect(() => {
          </thead>
          <tbody >
           {filteredOrders.map((order) => (
-          <tr key={order.orderItemId}    className={"text-center flex align-middle"} >
+          <tr key={order.orderItemId}  onClick={()=>fetchOrderItemData(order.orderItemId)}  className={"text-center flex align-middle"} >
          <td  className="d-flex align-items-center justify-content-center text-center  " >  
           {order.orderItemId}
         </td>

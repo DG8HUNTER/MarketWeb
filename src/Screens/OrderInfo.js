@@ -30,6 +30,9 @@ export default function OrderInfo() {
     const[orderItemData,setOrderItemData]=useState({});
     const[isDeleting,setIsDeleting]=useState(false);
     const[showDeleteToast , setShowDeleteToast]=useState(false)
+    const [productInfo  , setProductInfo]=useState({})
+
+    const[isUpdatingOI,setIsUpdatingOI]=useState(false);
   
 
 const [products , setProducts]=useState([]);
@@ -92,18 +95,21 @@ useEffect(() => {
 
 
 
-   
-  
+
     const q1 = query(collection(db, "Products"), where("storeId", "==", storeId));
     const unsubscribe1 = onSnapshot(q1, (querySnapshot) => {
       const products = [];
       querySnapshot.forEach((doc) => {
-      
-          products.push({productId: doc.id, productName:doc.data().name });
+          products.push({...doc.data() });
       });
       setProducts(products);
+     
     
     });
+
+
+
+
 
     const fetchOrderItemData = async (orderItemId)=>{
       const docRef = doc(db, "OrderItems", orderItemId);
@@ -112,7 +118,8 @@ useEffect(() => {
 
 if (docSnap.exists()) {
   const foundProduct = products.find(product => product.productId === docSnap.data().productId);
-  setProductName(foundProduct.productName)
+setProductInfo({...foundProduct})
+  setProductName(foundProduct.name)
   setQuantity(docSnap.data().quantity)
   setShowModify(true)
 } else {
@@ -137,8 +144,8 @@ if (docSnap.exists()) {
        const product=  products.find((product)=> product.productId===doc.data().productId)
        if (product) {
         // Access product properties safely
-        ordrs.push({ ...doc.data(), productName: product.productName });
-        productsIn.push(product.productName);
+        ordrs.push({ ...doc.data(), productName: product.name });
+        productsIn.push(product.name);
       }
         
         }
@@ -150,6 +157,9 @@ if (docSnap.exists()) {
       setIsLoading(false)
     
     });
+
+
+
 const DeleteOrderItem = async ()=>{
       setIsDeleting(true)
 
@@ -181,6 +191,52 @@ setTimeout(() => {
 
 
     }
+
+
+const updateOrderItem = async ()=>{
+  setIsUpdatingOI(true)
+  const orderItemRef=doc(db,"OrderItems",orderItemData.orderItemId)
+  const orderRef = doc(db,"Orders" , orderId)
+  if(productInfo.name != productName && orderItemData.quantity===quantity){
+    const findProduct = products.find((product)=> product.name === productName)
+    const prodInfo = {...findProduct}
+    const totalPrice = parseFloat((orderItemData.quantity*prodInfo.price).toFixed(2))
+    const totalProfit =parseFloat((orderItemData.quantity*prodInfo.profitPerItem).toFixed(2))
+    const diffPrice = totalPrice - orderItemData.totalPrice
+    const diffProfit = totalProfit - orderItemData.totalProfit
+    await updateDoc(orderItemRef, {
+      productId:prodInfo.productId,
+      totalPrice:totalPrice,
+      totalProfit:totalProfit
+    });
+
+    await updateDoc(orderRef , {
+      totalPrice:order.totalPrice+diffPrice,
+      totalProfit:order.totalProfit+diffProfit
+
+    })
+    setProductInfo({...findProduct})
+    
+  }
+
+const newOrderItemData = await getDoc(orderItemRef)
+const newOrderData = await getDoc(orderRef)
+setOrderItemData({... newOrderItemData.data()})
+setOrder({...newOrderData.data()})
+
+setIsUpdatingOI(false)
+setShowModify(false)
+setShowToast(true)
+
+
+setTimeout(() => {
+  setShowToast(false);
+  
+}, 2000);
+
+
+
+}
 
 
 
@@ -280,9 +336,9 @@ setTimeout(() => {
                 onChange={(event) => setProductName(event.target.value)}
               >
                 
-                {productsInOrders.map((prod) => (
-                  <option key={prod.productId || prod} value={prod}>
-                    {prod}
+                {products.map((prod) => (
+                  <option key={prod.productId} value={prod.name}>
+                    {prod.name}
                   </option>
                 ))}
               </Form.Select>
@@ -295,12 +351,19 @@ setTimeout(() => {
                 placeholder="Enter Quantity"
                 value={quantity}
                 min="1"
+                max={productInfo.inventory}
+                onChange={(event) => setQuantity(event.target.value)}
                 // Add validation and error handling as needed
               />
             </div>
             <div className="d-flex justify-content-between align-items-center">
-              <Button variant="primary" size="sm" >
-                Update
+              <Button variant="primary" size="sm"  onClick={()=>updateOrderItem()} disabled={productInfo.name === productName && orderItemData.quantity === parseInt(quantity)}>
+              {isUpdatingOI===true ? <div class="d-flex justify-content-between align-items-center" >
+                  Updating
+                  <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
+      <span className="visually-hidden">Loading...</span>
+    </span>
+                </div> : "Update"}
               </Button>
               <Button variant="danger" size="sm" onClick={()=>DeleteOrderItem()}>
                 {isDeleting===true ? <div class="d-flex justify-content-between align-items-center" >
@@ -332,7 +395,7 @@ setTimeout(() => {
     <Toast.Header class="bg-white" closeButton={false} >
       <strong className="me-auto">Notification</strong>
     </Toast.Header>
-    <Toast.Body>Order  status updated successfully</Toast.Body>
+    <Toast.Body>Order updated successfully</Toast.Body>
   </Toast>
     </ToastContainer>
     

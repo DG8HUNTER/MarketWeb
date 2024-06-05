@@ -33,12 +33,17 @@ export default function OrderInfo() {
     const [productInfo  , setProductInfo]=useState({})
 
     const[isUpdatingOI,setIsUpdatingOI]=useState(false);
+
+    console.log(productName)
   
 
 const [products , setProducts]=useState([]);
 const [customerData , setCustomerData]=useState({});
 
 const navigate = useNavigate();
+
+
+
 
 
 
@@ -192,47 +197,90 @@ setTimeout(() => {
 
     }
 
+   
+
 
 const updateOrderItem = async ()=>{
   setIsUpdatingOI(true)
   const orderItemRef=doc(db,"OrderItems",orderItemData.orderItemId)
   const orderRef = doc(db,"Orders" , orderId)
+  const findProduct = products.find((product)=> product.name === productName)
+  const prodInfo = {...findProduct}
+  let totalPrice;
+  let totalProfit;
+  let diffPrice;
+  let diffProfit;
+
+
+  if(productInfo.name != productName && orderItemData.quantity !==quantity){
+ totalPrice = parseFloat((quantity*prodInfo.price).toFixed(2))
+     totalProfit =parseFloat((quantity*prodInfo.profitPerItem).toFixed(2))
+     diffPrice = totalPrice - orderItemData.totalPrice
+     diffProfit = totalProfit - orderItemData.totalProfit
+
+ 
+
+
+
+
+
+  }else 
   if(productInfo.name != productName && orderItemData.quantity===quantity){
-    const findProduct = products.find((product)=> product.name === productName)
-    const prodInfo = {...findProduct}
-    const totalPrice = parseFloat((orderItemData.quantity*prodInfo.price).toFixed(2))
-    const totalProfit =parseFloat((orderItemData.quantity*prodInfo.profitPerItem).toFixed(2))
-    const diffPrice = totalPrice - orderItemData.totalPrice
-    const diffProfit = totalProfit - orderItemData.totalProfit
-    await updateDoc(orderItemRef, {
-      productId:prodInfo.productId,
-      totalPrice:totalPrice,
-      totalProfit:totalProfit
-    });
+     totalPrice = parseFloat((orderItemData.quantity*prodInfo.price).toFixed(2))
+     totalProfit =parseFloat((orderItemData.quantity*prodInfo.profitPerItem).toFixed(2))
+     diffPrice = totalPrice - orderItemData.totalPrice
+     diffProfit = totalProfit - orderItemData.totalProfit
 
-    await updateDoc(orderRef , {
-      totalPrice:order.totalPrice+diffPrice,
-      totalProfit:order.totalProfit+diffProfit
+    
 
-    })
-    setProductInfo({...findProduct})
+    
+
+
     
   }
+  else{
 
-const newOrderItemData = await getDoc(orderItemRef)
-const newOrderData = await getDoc(orderRef)
-setOrderItemData({... newOrderItemData.data()})
-setOrder({...newOrderData.data()})
+     totalProfit = parseFloat((quantity * prodInfo.profitPerItem).toFixed(2))
+     totalPrice = parseFloat((quantity * productInfo.price).toFixed(2))
+     diffPrice = totalPrice - orderItemData.totalPrice
+     diffProfit = totalProfit - orderItemData.totalProfit
 
-setIsUpdatingOI(false)
-setShowModify(false)
-setShowToast(true)
+   
 
 
-setTimeout(() => {
-  setShowToast(false);
+  }
+
+  await updateDoc(orderItemRef, {
+    productId:prodInfo.productId,
+    quantity:quantity,
+    totalPrice:totalPrice,
+    totalProfit:totalProfit
+  });
+
+  await updateDoc(orderRef , {
+    totalPrice:order.totalPrice+diffPrice,
+    totalProfit:order.totalProfit+diffProfit
+
+  })
+
+  const newOrderItemData = await getDoc(orderItemRef)
+  const newOrderData = await getDoc(orderRef)
+  setOrderItemData({... newOrderItemData.data(), productName:findProduct.name})
+  setOrder({...newOrderData.data()})
+  setQuantity(orderItemData.quantity)
+  setProductInfo({...prodInfo})
+  setIsUpdatingOI(false)
+  setShowModify(false)
+  setShowToast(true)
   
-}, 2000);
+  
+  setTimeout(() => {
+    setShowToast(false);
+    
+  }, 2000);
+
+
+
 
 
 
@@ -304,7 +352,7 @@ setTimeout(() => {
         }else {
             setFilteredOrders(orderItems)
         }   
-        }, [orderItems, search])
+        }, [orderItems, search ])
 
 
 

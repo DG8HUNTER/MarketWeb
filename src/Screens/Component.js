@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db  } from '../firebase.js';
 import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot} from 'firebase/firestore';
-import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer , button , Badge} from 'react-bootstrap';
+import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer , button , Badge ,Spinner} from 'react-bootstrap';
+import { Circles } from 'react-loader-spinner';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -16,9 +17,13 @@ function MyComponent() {
   const [currentOrders , setCurrentOrdes]=useState(0)
   const [income , setIncome] = useState(0)
   const [profit , setProfit] = useState(0)
+  const[previousIncome , setPreviousIncome]=useState(0)
+  const[previousProfit , setPreviousProfit]=useState(0)
+  const[incomeGainPercentage , setIncomeGainPercentage]=useState(0)
+  const[profitGainPercentage , setProfitGainPercentage]=useState(0)
 
- 
-  
+
+
 
   const handleButtonClick = (data) => {
     navigate(`/products/${data}`); // Include data as a parameter
@@ -38,6 +43,21 @@ function MyComponent() {
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
 
+ 
+
+// Get the month (0-indexed) and year of the previous month
+const prevMonth = today.getMonth() - 1;
+const prevYear = (prevMonth === -1) ? today.getFullYear() - 1 : today.getFullYear();
+
+// Create the start date of the previous month (1st day)
+const startOfPrevMonth = new Date(prevYear, prevMonth, 1);
+
+// Create a new Date object for potentially the last day of the previous month
+const endOfPrevMonth = new Date(prevYear, prevMonth + 1, 0);
+
+
+
+
 
 
 
@@ -49,21 +69,36 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
   const current =[]
   let monthlyIncome = 0;
   let monthlyProfit =0;
+  let prevMonthlyIncome = 0;
+  let prevMonthlyProfit =0;
 
   querySnapshot.forEach((doc) => {
       ord.push(doc.id);
+      console.log(doc.data().createdAt.toDate())
 
       if(doc.data().createdAt.toDate() >= startOfMonth &&  doc.data().createdAt.toDate()<=endOfMonth ){
         current.push(doc.id)
-        monthlyIncome+=doc.data().totalPrice;
+        
 
         //we have to see if the order is not cancelled or (pending 
-        if(doc.data().status!="cancelled" && doc.data().status!="pending"){
+        if(doc.data().status=="delivered"){
+          monthlyIncome+=doc.data().totalPrice;
           monthlyProfit+=doc.data().totalProfit;
         }
        
 
        
+      }else if (doc.data().createdAt.toDate() >= startOfPrevMonth &&  doc.data().createdAt.toDate()<=endOfPrevMonth) {
+
+        if(doc.data().status=="delivered"){
+          prevMonthlyIncome+=doc.data().totalPrice;
+          prevMonthlyProfit+=doc.data().totalProfit;
+        }
+       
+
+      }
+      else {
+
       }
   });
 
@@ -71,6 +106,10 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
   setCurrentOrdes(current.length)
   setIncome(monthlyIncome)
   setProfit(monthlyProfit)
+  setPreviousIncome(prevMonthlyIncome)
+  setPreviousProfit(prevMonthlyProfit)
+  setIncomeGainPercentage(parseFloat(((monthlyIncome-prevMonthlyIncome)/prevMonthlyIncome)*100).toFixed(2))
+  setProfitGainPercentage(parseFloat(((monthlyProfit-prevMonthlyProfit)/prevMonthlyProfit)*100).toFixed(2))
 }
 );
 
@@ -82,6 +121,8 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
 
   return (
     <div class={"d-flex flex-column col-12 p-4"}>
+
+
    
 
    <div class={"col-12 d-flex flex-row justify-content-around align-content-center"}>
@@ -112,6 +153,26 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
   </div>
 </div>
 
+   </div>
+
+   <div class="col-12 d-flex flex-row justify-content-around align-content-center">
+   <div class="card mt-2 shadow col-2">
+  <div class="card-body">
+    <h5 class="card-title">% Income Difference (Prev)</h5>
+    <p class="card-text font-weight-bold h3" style={{ color: incomeGainPercentage > 0 ? '#28a745' : 'red' }}>
+      {incomeGainPercentage} %
+    </p>
+  </div>
+</div>
+
+<div class="card mt-2 shadow col-2">
+  <div class="card-body">
+    <h5 class="card-title">% Income Difference (Prev)</h5>
+    <p class="card-text font-weight-bold h3" style={{ color: profitGainPercentage > 0 ? '#28a745' : 'red' }}>
+      {profitGainPercentage} %
+    </p>
+  </div>
+</div>
    </div>
 
 

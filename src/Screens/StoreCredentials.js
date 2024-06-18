@@ -31,12 +31,12 @@ function StoreCredentialForm() {
   });
 
   return (
-    <div class="col-12 d-flex justify-content-center align-items-center vh-100">
+    <div class="col-12 d-flex justify-content-center align-items-center vh-md-100 p-2 p-md-0 ">
       <div class=" col-11 col-md-9 col-lg-7 shadow p-3 rounded">
-        <div class="col-12 d-flex justify-content-between align-items-center">
+        <div class="col-12 d-flex justify-content-between align-items-center mb-2 mb-md-0">
         <h3> Store Credentials</h3>
 <div class=" p-2 shadow  " style={styles}>
-<img src={formData.image==null ?image : formData.image} class="rounded-circle img-fluid " alt="..." width={60} height={60}  />
+<img src={formData.image==null ?image : formData.image} class="rounded-circle img-fluid " alt="..." width={57} height={57}  />
 </div>
         
         </div>
@@ -44,12 +44,12 @@ function StoreCredentialForm() {
         <Form>
           
           <div class="mb-2">
-            <div class="col-12 d-flex justify-content-between  align-items-center">
+            <div class="col-12 d-flex  flex-column flex-md-row justify-content-between  align-items-md--center">
               <FormGroup
                 controlId="formBasicEmail"
-                className="mb-2 col-3 d-flex flex-md-column"
+                className="mb-2 col-md-3 d-flex flex-md-column"
               >
-                <label class="col-5 col-md-12  p-1 ">Store Name</label>
+                <label class="col-6 col-md-12  p-1 ">Store Name</label>
                 <input
                   type="text"
                   name="StoreName"
@@ -60,15 +60,15 @@ function StoreCredentialForm() {
                     setFormData({ ...formData, storeName: newValue });
                   }}
                   placeholder="Store Name"
-                  class={" rounded p-1 border-2"}
+                  class={" rounded p-1 border-2 col-6 col-md-auto "}
                 />
               </FormGroup>
 
               <FormGroup
                 controlId="formBasicPassword"
-                className="mb-2 col-3 d-flex flex-md-column"
+                className="mb-2 col-md-3 d-flex flex-md-column"
               >
-                <label class="col-5 col-md-12 p-1">Phone Number</label>
+                <label class="col-6 col-md-12 p-1">Phone Number</label>
                 <input
                   type="tel"
                   name="phoneNumber"
@@ -79,15 +79,15 @@ function StoreCredentialForm() {
                     setFormData({ ...formData, phoneNumver: newValue });
                   }}
                   placeholder="PhoneNumber"
-                  class={" rounded p-1 border-2"}
+                  class={"rounded p-1 border-2 col-6 col-md-auto"}
                 />
               </FormGroup>
 
               <FormGroup
                 controlId="formBasicConfirmPassword"
-                className="mb-2 col-3 d-flex flex-md-column"
+                className="mb-2 col-md-3 d-flex flex-md-column"
               >
-                <label class=" col-5 col-md-12 p-1">Location</label>
+                <label class=" col-6 col-md-12 p-1 ">Location</label>
                 <input
                   type="text"
                   name="location"
@@ -98,7 +98,7 @@ function StoreCredentialForm() {
                     setFormData({ ...formData, location: newValue });
                   }}
                   placeholder="Store Location"
-                  class={" rounded p-1 border-2"}
+                  class={" rounded p-1 border-2 col-6 col-md-auto"}
                 />
               </FormGroup>
             </div>
@@ -123,12 +123,12 @@ function StoreCredentialForm() {
 
           <h5> Delivery Info</h5>
 
-          <div class="col-12 d-flex justify-content-between  align-items-center">
+          <div class="col-12 d-flex flex-column flex-md-row justify-content-between  align-items-md-center">
             <FormGroup
               controlId="formBasicEmail"
-              className="mb-2 col-3 d-flex flex-md-column"
+              className="mb-2 col-md-3 d-flex flex-md-column"
             >
-              <label class="col-5 col-md-12  p-1 ">Minimum Charge</label>
+              <label class="col-6 col-md-12  p-1 ">Minimum Charge</label>
               <input
                 type="number"
                 min="0"
@@ -140,15 +140,15 @@ function StoreCredentialForm() {
                   setFormData({ ...formData, minimumCharge: newValue });
                 }}
                 placeholder="Minimum Charge"
-                class={" rounded p-1 border-2"}
+                class={" rounded p-1 border-2 col-6 col-md-auto"}
               />
             </FormGroup>
 
             <FormGroup
               controlId="formBasicPassword"
-              className="mb-2 col-3 d-flex flex-md-column"
+              className="mb-2 col-md-3 d-flex flex-md-column"
             >
-              <label class="col-5 col-md-12 p-1">Delivery Charge</label>
+              <label class="col-6 col-md-12 p-1">Delivery Charge</label>
               <input
                 type="number"
                 min={0}
@@ -160,15 +160,15 @@ function StoreCredentialForm() {
                   setFormData({ ...formData, deliveryCharge: newValue });
                 }}
                 placeholder="Delivery Charge"
-                class={" rounded p-1 border-2"}
+                class={" rounded p-1 border-2 col-6 col-md-auto"}
               />
             </FormGroup>
 
             <FormGroup
               controlId="formBasicConfirmPassword"
-              className="mb-2 col-3 d-flex flex-md-column"
+              className="mb-2 col-md-3 d-flex flex-md-column"
             >
-              <label class=" col-5 col-md-12 p-1">Delivery Time</label>
+              <label class=" col-6 col-md-12 p-1">Delivery Time</label>
               <input
                 type="number"
                 name="location"
@@ -180,22 +180,22 @@ function StoreCredentialForm() {
                   setFormData({ ...formData, deliveryTme: newValue });
                 }}
                 placeholder="Delivery Time"
-                class={" rounded p-1 border-2"}
+                class={" rounded p-1 border-2 col-6 col-md-auto"}
               />
             </FormGroup>
           </div>
 
           <h5>Operating Time</h5>
           <h6>WeekDays</h6>
-          <div class="col-12 d-flex  justify-content-between align-items-center  ">
-            <div class=" d-flex  ">
+          <div class="col-12 d-flex flex-column flex-md-row justify-content-md-between align-items-md-center  ">
+            <div class="   ">
               
               <FormGroup
                 controlId="formBasicConfirmPassword"
-                className="mb-2  d-flex flex-md-column "
+                className="mb-2  d-flex flex-column "
               >
                 <label className="col-5 col-md-12 p-1">Opening Time </label>
-                <InputGroup class="d-flex  flex-row align-items-center">
+                <InputGroup class="d-flex flex-row align-items-md-center ">
                   <input
                     type="number"
                     name="HH"
@@ -245,12 +245,12 @@ function StoreCredentialForm() {
               </FormGroup>
             </div>
 
-            <div class="d-flex">
+            <div class="d-flex ">
         
 
               <FormGroup
                 controlId="formBasicConfirmPassword"
-                className="mb-2  d-flex flex-md-column "
+                className="mb-2  d-flex flex-column "
               >
                 <label className="col-5 col-md-12 p-1"> Closing Time </label>
                 <InputGroup class="d-flex  flex-row ">
@@ -305,7 +305,7 @@ function StoreCredentialForm() {
 
           </div>
 
-<div class="d-flex ">
+<div class="d-flex  mt-2 mt-md-0">
 <h6 class="me-3">WeekEnds</h6>
 <Form.Group>
       <Form.Check
@@ -321,14 +321,14 @@ function StoreCredentialForm() {
       />
     </Form.Group>
 </div>
-          <div class="col-12 d-flex  justify-content-between align-items-center  ">
+          <div class="col-12 d-flex  flex-column flex-md-row justify-content-md-between align-items-md-center  ">
             <div class=" d-flex  ">
               
               <FormGroup
                 controlId="formBasicConfirmPassword"
-                className="mb-3  d-flex flex-md-column "
+                className="mb-3  d-flex flex-column "
               >
-                <label className="col-5 col-md-12 p-1">Opening Time </label>
+                <label className="col-12  p-1">Opening Time </label>
                 <InputGroup class="d-flex  flex-row align-items-center">
                   <input
                     type="number"
@@ -384,9 +384,9 @@ function StoreCredentialForm() {
 
               <FormGroup
                 controlId="formBasicConfirmPassword"
-                className="mb-3  d-flex flex-md-column "
+                className="mb-3  d-flex flex-column "
               >
-                <label className="col-5 col-md-12 p-1"> Closing Time </label>
+                <label className=" col-12 p-1"> Closing Time </label>
                 <InputGroup class="d-flex  flex-row ">
                   <input
                     type="number"

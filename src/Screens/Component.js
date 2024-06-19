@@ -1,11 +1,12 @@
 import React from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { db  } from '../firebase.js';
 import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot} from 'firebase/firestore';
 import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer , button , Badge ,Spinner} from 'react-bootstrap';
 import { Circles } from 'react-loader-spinner';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import image from "../Images/noStoreProfile.png"
 
 
 function MyComponent() {
@@ -13,6 +14,7 @@ function MyComponent() {
 
   const navigate = useNavigate();
 
+  const {data:storeId}=useParams()
   const [ordersNum , setOrdersNum] = useState(0)
   const [currentOrders , setCurrentOrdes]=useState(0)
   const [income , setIncome] = useState(0)
@@ -21,8 +23,14 @@ function MyComponent() {
   const[previousProfit , setPreviousProfit]=useState(0)
   const[incomeGainPercentage , setIncomeGainPercentage]=useState(0)
   const[profitGainPercentage , setProfitGainPercentage]=useState(0)
+  const [store , setStore]=useState({})
 
 
+  const styles = {
+     
+    borderRadius: '50%', // Set to 50% for a circle
+  
+  };
 
 
   const handleButtonClick = (data) => {
@@ -36,7 +44,6 @@ function MyComponent() {
     navigate(`/orders/${data}`); // Include data as a parameter
   };
 
-  const storeId = "AV392AHNNg8TZf5IoOKg"
 
   const today = new Date();
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -58,6 +65,12 @@ const endOfPrevMonth = new Date(prevYear, prevMonth + 1, 0);
 
 
 
+
+const unsub = onSnapshot(doc(db, "Stores", storeId), (doc) => {
+    if(doc.data()!=null){
+      setStore({...doc.data()})
+    }
+});
 
 
 
@@ -108,19 +121,37 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
   setProfit(monthlyProfit)
   setPreviousIncome(prevMonthlyIncome)
   setPreviousProfit(prevMonthlyProfit)
-  setIncomeGainPercentage(parseFloat(((monthlyIncome-prevMonthlyIncome)/prevMonthlyIncome)*100).toFixed(2))
-  setProfitGainPercentage(parseFloat(((monthlyProfit-prevMonthlyProfit)/prevMonthlyProfit)*100).toFixed(2))
+
+  if(monthlyIncome-prevMonthlyIncome!=0){
+    setIncomeGainPercentage(parseFloat(((monthlyIncome-prevMonthlyIncome)/prevMonthlyIncome)*100).toFixed(2))
+  }
+  else {
+    setIncomeGainPercentage(parseFloat(0).toFixed(2))
+  }
+
+  if((monthlyProfit-prevMonthlyProfit)!=0){
+    setProfitGainPercentage(parseFloat(((monthlyProfit-prevMonthlyProfit)/prevMonthlyProfit)*100).toFixed(2))
+  }
+  else {
+    setProfitGainPercentage(parseFloat(0).toFixed(2))
+  }
+  
+ 
 }
 );
 
 
-  
-  
-
-
-
   return (
     <div class={"d-flex flex-column col-12 p-4"}>
+
+      <div class ="col-12 d-flex justify-content-between align-items-center">
+        <h2>{store.name}</h2>
+
+        <div class=" p-2 shadow  " style={styles}>
+<img src={store.image==null ? image : store.image} class="rounded-circle  " alt="..."  style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }}  />
+</div>
+
+      </div>
 
 
    
@@ -167,7 +198,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
 
 <div class="card mt-2 shadow col-2">
   <div class="card-body">
-    <h5 class="card-title">% Income Difference (Prev)</h5>
+    <h5 class="card-title">% Profit Difference (Prev)</h5>
     <p class="card-text font-weight-bold h3" style={{ color: profitGainPercentage > 0 ? '#28a745' : 'red' }}>
       {profitGainPercentage} %
     </p>
@@ -176,26 +207,17 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
    </div>
 
 
-
-   
-
-
-
-<button class={"btn btn-primary col-3 mt-4"} onClick={() => handleButtonClick('AV392AHNNg8TZf5IoOKg')}>
+<button class={"btn btn-primary col-3 mt-4"} onClick={() => handleButtonClick(storeId)}>
         View Product
       </button>
 
-      <button class={"btn btn-primary mt-4 col-3"} onClick={() => addProduct('AV392AHNNg8TZf5IoOKg')}>
+      <button class={"btn btn-primary mt-4 col-3"} onClick={() => addProduct(storeId)}>
        Add Product
       </button>
 
-      <button class={"btn btn-primary mt-4 col-3"} onClick={() => orders('AV392AHNNg8TZf5IoOKg')}>
+      <button class={"btn btn-primary mt-4 col-3"} onClick={() => orders(storeId)}>
        Orders
       </button>
-
-
-
-
 
 
     </div>

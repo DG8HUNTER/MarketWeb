@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import image from "../Images/noStoreProfile.png"
 import {
   Form,
@@ -14,7 +14,7 @@ import {
 } from "react-bootstrap";
 
 import { getDownloadURL, ref, uploadBytes ,getStorage  , uploadBytesResumable} from 'firebase/storage';
-import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc} from 'firebase/firestore'; 
+import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , setDoc} from 'firebase/firestore'; 
 import { db  } from '../firebase.js';
 
 
@@ -58,6 +58,8 @@ function StoreCredentialForm() {
     // Other credential fields
   });
 
+
+  const navigate=useNavigate();
   
   const handleFileChange = (event) => {
     const droppedFile = event.target.files[0];
@@ -210,7 +212,7 @@ if(!formData.closingMinutesWeekEnd){
       }
             // Update the product document with the new image URL
   
-            const docRef = await addDoc(collection(db, "Stores"), {
+            const data = {
               "name": formData.storeName,
               "phoneNumber":formData.phoneNumber,
               "location":formData.location,
@@ -222,48 +224,47 @@ if(!formData.closingMinutesWeekEnd){
               "storeId":storeId,
               "OperatingField":{
                 Monday:{
-                  openingTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  closingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}` } ,
+                  OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}` } ,
                   Tuesday :{
-                    openingTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  closingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
                     
                   },
                   Wednesday:{
-                    openingTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  closingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
                   },
                   Thursday:{
-                    openingTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  closingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
                   },
                   Friday:{
-                    openingTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  closingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
                   },
                   Saturday:{
-                    openingTime:`${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}` , 
-                  closingTime:`${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
+                    OpeningTime:`${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}` , 
+                  ClosingTime:`${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
                   },
                   Sunday: (formData.includeSundays) ? {
-                    openingTime: `${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}`,
-                    closingTime: `${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
+                    OpeningTime: `${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}`,
+                    ClosingTime: `${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
                   } : null
 
                   
                 }
+              }
 
-            });
-
-            //navigation
-  
-            
+              await setDoc(doc(db, "Stores", storeId), data);
         
 
+          
 
+            //navigation
+  navigate(`/dash/${storeId}`)
+            
       
-
-
 
 
     }
@@ -445,7 +446,7 @@ if(!formData.closingMinutesWeekEnd){
                     name="HH"
                     min={1}
                     max={12} // Assuming delivery time is a number
-                    value={formData.startingHourWeekDay}
+                    value={formData.openingHourWeekDay}
                     onChange={(event) => {
                       const newValue =
                         event.target.value === "" ? null : event.target.value;
@@ -687,7 +688,13 @@ if(!formData.closingMinutesWeekEnd){
           </div>
 
           <button  type="submit" class="btn btn-primary col-12">
-            Submit
+            {isSubmitting==true ?  <div class="d-flex justify-content-center align-items-center" >
+                  Submitting
+                  <span className="spinner-border spinner-border-sm mx-2" role="status" aria-hidden="true">
+      <span className="visually-hidden">Loading...</span>
+    </span>
+                </div> :"Submit"}
+        
           </button>
         </Form>
 

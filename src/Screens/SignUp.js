@@ -83,11 +83,12 @@ createUserWithEmailAndPassword(auth, formData.email, formData.password)
   .then((userCredential) => {
     // Signed up 
     const store = userCredential.user.uid;
-    navigate(`/dash/${store}`)
+    navigate(`/storeCredentials/${store}`)
 
     // ...
   })
   .catch((error) => {
+    setIsSigningUp(false)
     const errorCode = error.code;
     const errorMessage = error.message;
     // ..
@@ -154,14 +155,19 @@ createUserWithEmailAndPassword(auth, formData.email, formData.password)
             </FormGroup>
 
             <Button variant="primary" type="submit" className="w-100  mb-3">
-             { isSigningUp==true ?"Signing Up ...": "Sign Up"}
+             { isSigningUp==true ?<div class="d-flex justify-content-center align-items-center" >
+                  Signing Up
+                  <span className="spinner-border spinner-border-sm mx-2" role="status" aria-hidden="true">
+      <span className="visually-hidden">Loading...</span>
+    </span>
+                </div>: "Sign Up"}
             </Button>
 
             <div class="d-flex justify-content-center align-items-center ">
-                <p  style={{color:"gray"}}> Already have an account ?  <a href="" class="text-primary"> Sign In</a></p>
+                <p  style={{color:"gray"}}> Already have an account ?  <span  onClick={()=>navigate("/SignIn")} class="text-primary"> Sign In</span></p>
             </div>
           </Form>
-        </Card.Body>
+        </Card.Body> 
       </Card>
     </div>
   );

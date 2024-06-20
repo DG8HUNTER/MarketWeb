@@ -26,6 +26,8 @@ function MyComponent() {
   const [store , setStore]=useState({})
 
 
+
+
   const styles = {
      
     borderRadius: '50%', // Set to 50% for a circle
@@ -142,12 +144,12 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
 
 
   return (
-    <div class={"d-flex flex-column col-12 p-4"}>
+    <div class={"d-flex flex-column col-12 p-3"}>
 
       <div class ="col-12 d-flex justify-content-between align-items-center">
         <h2>{store.name}</h2>
 
-        <div class=" p-2 shadow  " style={styles}>
+        <div class=" p-2 shadow  " style={styles}  onClick={()=>navigate(`/storeCredentials/${storeId}`)}>
 <img src={store.image==null ? image : store.image} class="rounded-circle  " alt="..."  style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }}  />
 </div>
 

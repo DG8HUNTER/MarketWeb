@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 import image from "../Images/noStoreProfile.png"
@@ -22,6 +22,9 @@ import { db  } from '../firebase.js';
 function StoreCredentialForm() {
 
 
+
+
+
     const styles = {
      
         borderRadius: '50%', // Set to 50% for a circle
@@ -30,7 +33,7 @@ function StoreCredentialForm() {
   const { data: storeId } = useParams();
 
   const [isSubmitting  , setIsSubmitting]=useState()
-
+  const [isUpdating , setIsUpdating]=useState()
 
   const [formData, setFormData] = useState({
     storeName:null,
@@ -57,6 +60,80 @@ function StoreCredentialForm() {
    
     // Other credential fields
   });
+
+  const [state, setState]=useState()
+
+  function formatNumber(number) {
+    return (number < 10 ? "0" : "") + number;
+  }
+
+
+  function getTimeComponents(timeString) {
+    const timeRegex = /^(?<hours>\d+):(?<minutes>\d+) (?<period>[ap]m)$/i;
+    const match = timeString.match(timeRegex);
+  
+    if (!match) {
+      throw new Error('Invalid time format. Please use HH:MM (am/pm)');
+    }
+  
+    const { hours, minutes, period } = match.groups;
+  
+    return {
+      hour: parseInt(hours, 10),
+      minutes: parseInt(minutes, 10),
+      period: period,
+    };
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const docRef = doc(db, "Stores", storeId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setFormData({ 
+            name: docSnap.data().name ,
+            phoneNumber: docSnap.data().phoneNumber,
+            location:docSnap.data().location,
+            minimumCharge:docSnap.data().minimumCharge,
+            deliveryCharge:docSnap.data().deliveryCharge,
+            description:docSnap.data().description,
+            deliveryTime:docSnap.data().deliveryTime,
+            openingHourWeekDay:getTimeComponents(docSnap.data().OperatingField["Monday"]["OpeningTime"]).hour,
+            openingMinutesWeekDay:formatNumber(getTimeComponents(docSnap.data().OperatingField["Monday"]["OpeningTime"]).minutes),
+            openingTimePeriodWeekDay:getTimeComponents(docSnap.data().OperatingField["Monday"]["OpeningTime"]).period,
+            closingHourWeekDay:getTimeComponents(docSnap.data().OperatingField["Monday"]["ClosingTime"]).hour,
+            closingMinutesWeekDay:formatNumber(getTimeComponents(docSnap.data().OperatingField["Monday"]["ClosingTime"]).minutes),
+            closingTimePeriodWeekDay:getTimeComponents(docSnap.data().OperatingField["Monday"]["ClosingTime"]).period,
+            openingHourWeekEnd:getTimeComponents(docSnap.data().OperatingField["Saturday"]["OpeningTime"]).hour,
+            openingMinutesWeekEnd:formatNumber(getTimeComponents(docSnap.data().OperatingField["Saturday"]["OpeningTime"]).minutes),
+            openingTimePeriodWeekEnd:getTimeComponents(docSnap.data().OperatingField["Saturday"]["OpeningTime"]).period,
+            closingHourWeekEnd:getTimeComponents(docSnap.data().OperatingField["Saturday"]["ClosingTime"]).hour,
+            closingMinutesWeekEnd:formatNumber(getTimeComponents(docSnap.data().OperatingField["Saturday"]["ClosingTime"]).minutes),
+            closingTimePeriodWeekEnd:getTimeComponents(docSnap.data().OperatingField["Saturday"]["ClosingTime"]).period,
+            image:docSnap.data().image,
+            includeSundays:docSnap.data().OperatingField["Sunday"]==null ? false :true
+           });
+          setState("update"); // Update state for edit scenario
+        } else {
+          setState("add"); // Add state for new store creation
+        }
+      } catch (error) {
+        console.error("Error fetching store data:", error);
+        // Handle errors appropriately (e.g., display an error message to the user)
+      }
+    };
+
+    fetchData(); // Call the function to fetch data
+
+    // Clean up function (optional, if needed for subscriptions or event listeners)
+    return () => {
+      // Clean up logic here
+    };
+
+  }, [storeId]);
+
 
 
   const navigate=useNavigate();
@@ -101,6 +178,11 @@ function StoreCredentialForm() {
   };
 
 
+  const handelUpdate = async(event)=>{
+
+  }
+
+
   const [errors, setErrors] = useState({}); // To store validation errors
 
   const handleSubmit = async (event) => {
@@ -109,38 +191,38 @@ function StoreCredentialForm() {
     const validationErrors = {};
 
 
-    if(!formData.storeName){
-        validationErrors.storeName= "Required Field";
+    if(formData.name==null){
+        validationErrors.name= "Required Field";
     }
 
-    if(!formData.phoneNumber){
+    if(formData.phoneNumber==null){
       validationErrors.phoneNumber= "Required Field";
   }
 
-  if(!formData.location){
+  if(formData.location==null){
     validationErrors.location= "Required Field";
 }
 
-if(!formData.description){
+if(formData.description==null){
   validationErrors.description= "Required Field";
 }
 
-if(!formData.minimumCharge){
+if(formData.minimumCharge==null){
   validationErrors.minimumCharge="Required Field";
 }
 
-if(!formData.deliveryCharge){
+if(formData.deliveryCharge==null){
   validationErrors.deliveryCharge= "Required Field";
 }
-if(!formData.deliveryTime){
+if(formData.deliveryTime==null){
   validationErrors.deliveryTime= "Required Field";
 }
 
-if(!formData.openingHourWeekDay){
+if(formData.openingHourWeekDay==null){
   validationErrors.openingHourWeekDay= "Required Field";
 }
 
-if(!formData.openingMinutesWeekDay){
+if(formData.openingMinutesWeekDay==null){
   validationErrors.openingMinutesWeekDay= "Required Field";
 }
 
@@ -148,23 +230,23 @@ if(!formData.closingHourWeekDay){
   validationErrors.closingHourWeekDay= "Required Field";
 }
 
-if(!formData.closingMinutesWeekDay){
+if(formData.closingMinutesWeekDay==null){
   validationErrors.closingMinutesWeekDay= "Required Field";
 }
 
-if(!formData.openingHourWeekEnd){
+if(!formData.openingHourWeekEnd==null){
   validationErrors.openingHourWeekEnd= "Required Field";
 }
 
-if(!formData.openingMinutesWeekEnd){
+if(!formData.openingMinutesWeekEnd==null){
   validationErrors.openingMinutesWeekEnd= "Required Field";
 }
 
-if(!formData.closingHourWeekEnd){
+if(!formData.closingHourWeekEnd==null){
   validationErrors.closingHourWeekEnd= "Required Field";
 }
 
-if(!formData.closingMinutesWeekEnd){
+if(!formData.closingMinutesWeekEnd==null){
   validationErrors.closingMinutesWeekEnd= "Required Field";
 }
 
@@ -176,7 +258,12 @@ if(!formData.closingMinutesWeekEnd){
     // (e.g., hashing with a strong algorithm) before user creation.
 
     if (Object.keys(validationErrors).length === 0) {
-      setIsSubmitting(true);
+      if(state==="add"){
+        setIsSubmitting(true);
+      }else {
+        setIsUpdating(true)
+      }
+     
 
       if(formData.image!=null){
 
@@ -213,7 +300,7 @@ if(!formData.closingMinutesWeekEnd){
             // Update the product document with the new image URL
   
             const data = {
-              "name": formData.storeName,
+              "name": formData.name,
               "phoneNumber":formData.phoneNumber,
               "location":formData.location,
               "minimumCharge":parseFloat(formData.minimumCharge).toFixed(2),
@@ -256,7 +343,19 @@ if(!formData.closingMinutesWeekEnd){
                 }
               }
 
-              await setDoc(doc(db, "Stores", storeId), data);
+              if(state=="add"){
+                await setDoc(doc(db, "Stores", storeId), data);
+              }
+              else {
+                const Ref = doc(db, "Stores", storeId);
+
+// Set the "capital" field of the city 'DC'
+await updateDoc(Ref, {
+  ...data
+});
+              }
+
+             
         
 
           
@@ -286,7 +385,7 @@ if(!formData.closingMinutesWeekEnd){
    
         </div>
         
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit }>
           
           <div class="mb-2">
             <div class="col-12 d-flex  flex-column flex-md-row justify-content-between  align-items-md--center">
@@ -298,14 +397,14 @@ if(!formData.closingMinutesWeekEnd){
                 <input
                   type="text"
                   name="StoreName"
-                  value={formData.storeName}
+                  value={formData.name}
                   onChange={(event) => {
                     const newValue =
                       event.target.value === "" ? null : event.target.value; // Check for empty string
-                    setFormData({ ...formData, storeName: newValue });
+                    setFormData({ ...formData, name: newValue });
                   }}
                   placeholder="Store Name"
-                  className={`  ${errors.storeName==null ? "border-2" : " form-control is-invalid"} rounded p-1  col-6 col-md-auto` }
+                  className={`  ${errors.name==null ? "border-2" : " form-control is-invalid"} rounded p-1  col-6 col-md-auto` }
                 />
               </FormGroup>
 
@@ -446,6 +545,7 @@ if(!formData.closingMinutesWeekEnd){
                     name="HH"
                     min={1}
                     max={12} // Assuming delivery time is a number
+                    maxLength={2}
                     value={formData.openingHourWeekDay}
                     onChange={(event) => {
                       const newValue =
@@ -463,10 +563,11 @@ if(!formData.closingMinutesWeekEnd){
                     name="MM"
                     min={0}
                     max={59} // Assuming delivery time is a number
+                    maxLength={2}
                     value={formData.openingMinutesWeekDay}
                     onChange={(event) => {
                       const newValue =
-                        event.target.value === "" ? null : event.target.value;
+                        event.target.value === "" ? null : formatNumber(parseInt(event.target.value));
                       setFormData({ ...formData, openingMinutesWeekDay: newValue });
                     }}
                     placeholder="MM"
@@ -502,6 +603,7 @@ if(!formData.closingMinutesWeekEnd){
                   <input
                     type="number"
                     name="HH"
+                    maxLength={2}
                     min={1}
                     max={12} // Assuming delivery time is a number
                     value={formData.closingHourWeekDay}
@@ -520,11 +622,11 @@ if(!formData.closingMinutesWeekEnd){
                     type="number"
                     name="MM"
                     min={0}
+                    maxLength={2}
                     max={59} // Assuming delivery time is a number
-                    value={formData.closingMinutesWeekDay}
+                    value={ formData.closingMinutesWeekDay}
                     onChange={(event) => {
-                      const newValue =
-                        event.target.value === "" ? null : event.target.value;
+                      const newValue = event.target.value === "" ? null : formatNumber(parseInt(event.target.value));
                       setFormData({ ...formData, closingMinutesWeekDay: newValue });
                     }}
                     placeholder="MM"
@@ -578,9 +680,11 @@ if(!formData.closingMinutesWeekEnd){
                   <input
                     type="number"
                     name="HH"
+                    maxLength={2}
                     min={1}
                     max={12} // Assuming delivery time is a number
-                    value={formData.startingHourWeekEnd}
+                    maxLength={2}
+                    value={formData.openingHourWeekEnd}
                     onChange={(event) => {
                       const newValue =
                         event.target.value === "" ? null : event.target.value;
@@ -597,11 +701,14 @@ if(!formData.closingMinutesWeekEnd){
                     name="MM"
                     min={0}
                     max={59} // Assuming delivery time is a number
-                    value={formData.startingMinutesWeekDay}
+                    maxLength={2}
+                    value={formData.openingMinutesWeekEnd}
                     onChange={(event) => {
-                      const newValue =
-                        event.target.value === "" ? null : event.target.value;
-                      setFormData({ ...formData, openingMinutesWeekEnd: newValue });
+                        const newValue =
+                        event.target.value === "" ? null : formatNumber(parseInt(event.target.value));
+                      setFormData({ ...formData, openingMinutesWeekEnd: newValue});
+                      
+                     
                     }}
                     placeholder="MM"
                     class={`  ${errors.openingMinutesWeekEnd==null ?"border-2" : "form-control is-invalid"} rounded  text-center p-1` }
@@ -638,6 +745,7 @@ if(!formData.closingMinutesWeekEnd){
                     name="HH"
                     min={1}
                     max={12} // Assuming delivery time is a number
+                    maxLength={2}
                     value={formData.closingHourWeekEnd}
                     onChange={(event) => {
                       const newValue =
@@ -655,10 +763,11 @@ if(!formData.closingMinutesWeekEnd){
                     name="MM"
                     min={0}
                     max={59} // Assuming delivery time is a number
+                    maxLength={2}
                     value={formData.closingMinutesWeekEnd}
                     onChange={(event) => {
                       const newValue =
-                        event.target.value === "" ? null : event.target.value;
+                        event.target.value === "" ? null : formatNumber(parseInt(event.target.value));
                       setFormData({ ...formData, closingMinutesWeekEnd: newValue });
                     }}
                     placeholder="MM"
@@ -688,12 +797,31 @@ if(!formData.closingMinutesWeekEnd){
           </div>
 
           <button  type="submit" class="btn btn-primary col-12">
-            {isSubmitting==true ?  <div class="d-flex justify-content-center align-items-center" >
-                  Submitting
-                  <span className="spinner-border spinner-border-sm mx-2" role="status" aria-hidden="true">
-      <span className="visually-hidden">Loading...</span>
-    </span>
-                </div> :"Submit"}
+
+          {state === "add" ? (
+  isSubmitting === true ? (
+    <div class="d-flex justify-content-center align-items-center">
+      Submitting
+      <span className="spinner-border spinner-border-sm mx-2" role="status" aria-hidden="true">
+        <span className="visually-hidden">Loading...</span>
+      </span>
+    </div>
+  ) : (
+    "Submit"
+  )
+):(
+  isUpdating === true ? (
+    <div class="d-flex justify-content-center align-items-center">
+      Updating
+      <span className="spinner-border spinner-border-sm mx-2" role="status" aria-hidden="true">
+        <span className="visually-hidden">Loading...</span>
+      </span>
+    </div>
+  ) : (
+    "Update"
+  )
+  
+)}
         
           </button>
         </Form>

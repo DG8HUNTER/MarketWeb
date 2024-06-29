@@ -251,6 +251,54 @@ if(!formData.closingMinutesWeekEnd==null){
 }
 
 
+async function prepareStoreData(downloadURL) {
+  return {
+    "name": formData.name,
+    "phoneNumber": formData.phoneNumber,
+    "location": formData.location,
+    "minimumCharge": parseFloat(formData.minimumCharge).toFixed(2),
+    "description": formData.description,
+    "deliveryCharge": parseFloat(formData.deliveryCharge).toFixed(2),
+    "deliveryTime": parseInt(formData.deliveryTime),
+    "image":downloadURL,
+    "status": "Open",
+    "storeId": storeId,
+    "OperatingField":{
+      Monday:{
+        OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+        ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}` } ,
+        Tuesday :{
+          OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+        ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+          
+        },
+        Wednesday:{
+          OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+        ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+        },
+        Thursday:{
+          OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+        ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+        },
+        Friday:{
+          OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
+        ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
+        },
+        Saturday:{
+          OpeningTime:`${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}` , 
+        ClosingTime:`${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
+        },
+        Sunday: (formData.includeSundays) ? {
+          OpeningTime: `${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}`,
+          ClosingTime: `${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
+        } : null
+
+        
+      }
+  };
+}
+
+
     setErrors(validationErrors);
 
     // **Security Consideration:**
@@ -263,13 +311,13 @@ if(!formData.closingMinutesWeekEnd==null){
       }else {
         setIsUpdating(true)
       }
-     
+     let image ;
 
       if(formData.image!=null){
 
         const storage = getStorage();
 
-        const filename = `\{${formData.storeName}Logo.png`;
+        const filename = `\{${formData.name}Logo.png`;
 
         // Create a storage reference
         const storageRef = ref(storage, `stores-logos/${filename}`);
@@ -281,7 +329,7 @@ if(!formData.closingMinutesWeekEnd==null){
         const uploadTask = uploadBytesResumable(storageRef, imageBlob, {
           contentType: 'image/jpeg' // Specify image type
         });
-        uploadTask.on('state_changed',
+       uploadTask.on('state_changed',
           (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             console.log('Upload progress:', progress + '%');
@@ -291,79 +339,54 @@ if(!formData.closingMinutesWeekEnd==null){
           },
           async () => {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            const image=downloadURL;
+            console.log(`img ${image}`)
+
             console.log('Image URL:', downloadURL);
+
+
+            const data = await prepareStoreData(downloadURL)
+
+            console.log(`data image  : ${data.image}`)
+
+            if(state=="add"){
+              await setDoc(doc(db, "Stores", storeId), data);
+            }
+            else {
+              const Ref = doc(db, "Stores", storeId);
+              console.log("Hello update")
+
+
+await updateDoc(Ref, data)
+            }
+
+           
+      
+
+        
+
+          //navigation
+navigate(`/dash/${storeId}`)
   
-            setFormData({...formData , image:downloadURL})
+           
+          
+
+            
+           
           }
         );
       }
             // Update the product document with the new image URL
+            
   
-            const data = {
-              "name": formData.name,
-              "phoneNumber":formData.phoneNumber,
-              "location":formData.location,
-              "minimumCharge":parseFloat(formData.minimumCharge).toFixed(2),
-              "description":formData.description,
-              "deliveryCharge":parseFloat(formData.deliveryCharge).toFixed(2),
-              "deliveryTime":parseInt(formData.deliveryTime),
-              "image": formData.image,
-              "storeId":storeId,
-              "OperatingField":{
-                Monday:{
-                  OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}` } ,
-                  Tuesday :{
-                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
-                    
-                  },
-                  Wednesday:{
-                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
-                  },
-                  Thursday:{
-                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
-                  },
-                  Friday:{
-                    OpeningTime:`${formData.openingHourWeekDay}:${formData.openingMinutesWeekDay} ${formData.openingTimePeriodWeekDay}` , 
-                  ClosingTime:`${formData.closingHourWeekDay}:${formData.closingMinutesWeekDay} ${formData.closingTimePeriodWeekDay}`
-                  },
-                  Saturday:{
-                    OpeningTime:`${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}` , 
-                  ClosingTime:`${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
-                  },
-                  Sunday: (formData.includeSundays) ? {
-                    OpeningTime: `${formData.openingHourWeekEnd}:${formData.openingMinutesWeekEnd} ${formData.openingTimePeriodWeekEnd}`,
-                    ClosingTime: `${formData.closingHourWeekEnd}:${formData.closingMinutesWeekEnd} ${formData.closingTimePeriodWeekEnd}`
-                  } : null
+           
 
-                  
-                }
-              }
-
-              if(state=="add"){
-                await setDoc(doc(db, "Stores", storeId), data);
-              }
-              else {
-                const Ref = doc(db, "Stores", storeId);
-
-// Set the "capital" field of the city 'DC'
-await updateDoc(Ref, {
-  ...data
-});
-              }
-
-             
-        
 
           
 
-            //navigation
-  navigate(`/dash/${storeId}`)
+   
             
-      
+   
 
 
     }

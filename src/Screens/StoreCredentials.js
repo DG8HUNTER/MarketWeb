@@ -11,6 +11,7 @@ import {
   Card,
   InputGroup,
   FormControl,
+  
 } from "react-bootstrap";
 
 import { getDownloadURL, ref, uploadBytes ,getStorage  , uploadBytesResumable} from 'firebase/storage';
@@ -35,6 +36,8 @@ function StoreCredentialForm() {
   const [isSubmitting  , setIsSubmitting]=useState()
   const [isUpdating , setIsUpdating]=useState()
 
+  
+
   const [formData, setFormData] = useState({
     storeName:null,
     phoneNumber:null,
@@ -56,7 +59,8 @@ function StoreCredentialForm() {
     openingTimePeriodWeekDay:"AM",
     closingTimePeriodWeekDay:"PM",
     openingTimePeriodWeekEnd:"AM",
-    closingTimePeriodWeekEnd:"PM"
+    closingTimePeriodWeekEnd:"PM",
+    status:null
    
     // Other credential fields
   });
@@ -113,7 +117,8 @@ function StoreCredentialForm() {
             closingMinutesWeekEnd:formatNumber(getTimeComponents(docSnap.data().OperatingField["Saturday"]["ClosingTime"]).minutes),
             closingTimePeriodWeekEnd:getTimeComponents(docSnap.data().OperatingField["Saturday"]["ClosingTime"]).period,
             image:docSnap.data().image,
-            includeSundays:docSnap.data().OperatingField["Sunday"]==null ? false :true
+            includeSundays:docSnap.data().OperatingField["Sunday"]==null ? false :true,
+            status:docSnap.data().status
            });
           setState("update"); // Update state for edit scenario
         } else {
@@ -134,7 +139,21 @@ function StoreCredentialForm() {
 
   }, [storeId]);
 
+  console.log(formData.status)
+  
 
+  const [isOpen, setIsOpen] = useState(false);
+
+
+
+  useEffect(() => {
+    if (formData) {
+      setIsOpen(formData.status === "Open"); // Set isOpen based on status
+    }
+  }, [formData.status]); // Dependency array: updates isOpen whenever formData changes
+
+
+  console.log(isOpen)
 
   const navigate=useNavigate();
   
@@ -250,6 +269,8 @@ if(!formData.closingMinutesWeekEnd==null){
   validationErrors.closingMinutesWeekEnd= "Required Field";
 }
 
+console.log("Hello world")
+
 
 async function prepareStoreData(downloadURL) {
   return {
@@ -261,7 +282,7 @@ async function prepareStoreData(downloadURL) {
     "deliveryCharge": parseFloat(formData.deliveryCharge).toFixed(2),
     "deliveryTime": parseInt(formData.deliveryTime),
     "image":downloadURL,
-    "status": "Open",
+    "status": isOpen===true ? "Open" :"Closed" ,
     "storeId": storeId,
     "OperatingField":{
       Monday:{
@@ -298,6 +319,8 @@ async function prepareStoreData(downloadURL) {
   };
 }
 
+console.log(1)
+
 
     setErrors(validationErrors);
 
@@ -311,10 +334,11 @@ async function prepareStoreData(downloadURL) {
       }else {
         setIsUpdating(true)
       }
+      console.log(2);
      let image ;
 
       if(formData.image!=null){
-
+console.log(3)
         const storage = getStorage();
 
         const filename = `\{${formData.name}Logo.png`;
@@ -338,13 +362,15 @@ async function prepareStoreData(downloadURL) {
             console.error('Error uploading image:', error);
           },
           async () => {
+
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
             const image=downloadURL;
+            console.log(4)
             console.log(`img ${image}`)
 
             console.log('Image URL:', downloadURL);
 
-
+console.log(5)
             const data = await prepareStoreData(downloadURL)
 
             console.log(`data image  : ${data.image}`)
@@ -398,6 +424,16 @@ navigate(`/dash/${storeId}`)
         <div class="col-12 d-flex justify-content-between align-items-center mb-2 mb-md-0">
         <h3> Store Credentials</h3>
 
+        
+
+
+<div class="d-flex justify-content-center  align-items-center" >
+<div class="form-check form-switch mx-3">
+  <input class="form-check-input " type="checkbox" role="switch" id="flexSwitchCheckDefault"  onClick={()=>setIsOpen(!isOpen)} checked={isOpen} />
+  <label class="form-check-label" for="flexSwitchCheckDefault">Open</label>
+</div>
+        
+
         <div class="d-flex  " onClick={()=>handleClick()}>
         <input type="file" id="fileInput"  accept="image/*" onChange={handleFileChange} class={"mt-4 " }   style={{ display: 'none' }} />
 <div class=" p-2 shadow  " style={styles}>
@@ -405,6 +441,8 @@ navigate(`/dash/${storeId}`)
 </div>
      
         </div>
+</div>
+
    
         </div>
         

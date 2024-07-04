@@ -18,6 +18,12 @@ export default  function ProductInfo() {
    const [showToast , setShowToast]=useState(false)
    const navigate = useNavigate();
 
+
+   const handleClick = () => {
+    document.getElementById('fileInput').click();
+  };
+  
+
    console.log(productInfo)
 
   const handleDragOver = (event) => {
@@ -73,6 +79,8 @@ export default  function ProductInfo() {
    setUpdating(true)
 
     const storage = getStorage(); // Initialize Storage instance (once outside the function)
+  if(selectedImage!=null){
+
 
     try {
       // Create a unique filename (optional)
@@ -140,6 +148,41 @@ export default  function ProductInfo() {
       // Reset upload state (optional)
        // Clear selected image after upload
     }
+
+
+
+  }else {
+
+
+    const productDocRef = doc(db, "Products", productId);
+    await updateDoc(productDocRef, {
+      // Update relevant product fields
+      "discount": parseInt(productInfo.discount),
+      "name": productInfo.name,
+      "inventory": parseInt(productInfo.inventory),
+      "description": productInfo.description,
+      "price":parseFloat(productInfo.price),
+      "profitPerItem" : parseFloat(productInfo.profitPerItem),
+      "category": productInfo.category,
+      // ...other product fields
+    });
+
+    setUpdating(false)
+    setShowToast(true)
+    
+
+    setTimeout(() => {
+      setShowToast(false);
+      
+    }, 2000);
+
+
+    console.log('Product updated successfully!');
+
+
+
+  }
+  
   }
 
 
@@ -250,23 +293,41 @@ export default  function ProductInfo() {
 }} />
   </div>
               <div className="col-12 mt-5">
-                <button type="button" className="btn btn-primary w-100" onClick={handleUpdate} disabled={!(productInfo.name!=null && productInfo.category !=null && productInfo.price!=null && productInfo.discount!=null && productInfo.inventory!=null && productInfo.description!=null && productInfo.image!=null)} >{isUpdating ? "Updating Product ..." : "Update Product"}</button>
-                <button type="button" className="btn btn-danger w-100 mt-2" onClick={DeleteProduct}>{isDeleting == true ? "Deleting Product ..." : "Delete Product"}</button>
+                <button type="button" className="btn btn-primary w-100" onClick={handleUpdate} disabled={!(productInfo.name!=null && productInfo.category !=null && productInfo.price!=null && productInfo.discount!=null && productInfo.inventory!=null && productInfo.description!=null && productInfo.image!=null)} >
+                  {isUpdating === true ? ( <div class="d-flex justify-content-center align-items-center">
+                 Updating Product
+                    <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
+      <span className="visually-hidden">Loading...</span>
+    </span>
+                  </div>
+   
+  ):"Update Product"}</button>
+                <button type="button" className="btn btn-danger w-100 mt-2" onClick={DeleteProduct}>
+                {isDeleting === true ? ( <div class="d-flex justify-content-center align-items-center">
+                 Deleting Product
+                    <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
+      <span className="visually-hidden">Loading...</span>
+    </span>
+                  </div>
+   
+  ):"Delete Product"}
+                  
+                  
+                  </button>
               </div>
             </form>
             <div className="col-md-6 d-flex flex-column align-items-center mt-4 mt-md-0">
             <Col xs={6} sm={6} md={8} lg={7} xl={6} class={"align-self-center"}> {/* Responsive breakpoints */}
-      <Image src={productInfo.image} className="rounded" alt="Product Image" />
+      <Image src={productInfo.image} onClick={()=>handleClick()} className="rounded" alt="Product Image" />
 
      
     </Col>
 
-    <div className="image-uploader mt-4 col-3" onDragOver={handleDragOver} onDrop={handleDrop}>
-      <input type="file" accept="image/*" onChange={handleFileChange}  />
+    <div className="image-uploader mt-4 col-3" onDragOver={handleDragOver} onDrop={handleDrop}  style={{ display: 'none' }}>
+      <input type="file" id="fileInput" class="hidden" accept="image/*" onChange={handleFileChange}  />
       
     </div>
-
-            </div>
+    </div>
           </div>
         ) : (
           productInfo === null ? (

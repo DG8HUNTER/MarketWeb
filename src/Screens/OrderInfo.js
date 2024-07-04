@@ -9,11 +9,20 @@ import { db  } from '../firebase.js';
 
 import { Table ,Image,Col , label , input , textarea , Toast , ToastContainer ,Spinner , Button ,Form} from 'react-bootstrap';
 import { Circles } from 'react-loader-spinner';
+import { getAuth } from 'firebase/auth'; // Import for clarity
+
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 
 export default function OrderInfo() {
+
+  
+const auth = getAuth();  // Get the Firebase Auth instance
+
+
+
     const {data:orderId}=useParams();
     const [order ,setOrder]=useState({});
     const [orderItems , setOrderItems]=useState([]);
@@ -31,10 +40,34 @@ export default function OrderInfo() {
     const[isDeleting,setIsDeleting]=useState(false);
     const[showDeleteToast , setShowDeleteToast]=useState(false)
     const [productInfo  , setProductInfo]=useState({})
+    const [currentUserID , setCurrentUserID]=useState("")
+
+    
+
+    useEffect(() => {
+      const unsubscribe = auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          setCurrentUserID(user.uid);
+          console.log('User logged in:', currentUserID);
+        } else {
+          setCurrentUserID(null); // Set to null when user logs out
+          console.log('User logged out');
+        }
+      });
+  
+      // Important: Unregister the listener on component unmount to prevent memory leaks
+      return () => unsubscribe();
+    }, []); // Empty dependency array: runs only once on component mount
+  
+    // ... (Rest of your component code, using currentUserID if needed)
+  
+
+// function x = await getCurrentUser();
+
+
+
 
     const[isUpdatingOI,setIsUpdatingOI]=useState(false);
-
-    console.log(productName)
   
 
 const [products , setProducts]=useState([]);
@@ -94,14 +127,12 @@ useEffect(() => {
   fetchData();
 }, []);
 
-    const storeId = "AV392AHNNg8TZf5IoOKg";
+  
 
 
 
-
-
-
-    const q1 = query(collection(db, "Products"), where("storeId", "==", storeId));
+if(currentUserID!=""){
+    const q1 = query(collection(db, "Products"), where("storeId", "==", currentUserID));
     const unsubscribe1 = onSnapshot(q1, (querySnapshot) => {
       const products = [];
       querySnapshot.forEach((doc) => {
@@ -111,9 +142,9 @@ useEffect(() => {
      
     
     });
+  
 
-
-
+  }
 
 
     const fetchOrderItemData = async (orderItemId)=>{
@@ -177,8 +208,8 @@ const totalItems =orderData.data().totalItems-1
 
 
 await updateDoc(orderRef, {
-  totalPrice:totalPrice,
-  totalProfit:totalProfit,
+  totalPrice:parseFloat(totalPrice).toFixed(2),
+  totalProfit:parseFloat(totalProfit).toFixed(2),
   totalItems:totalItems
 });
 
@@ -206,6 +237,8 @@ const updateOrderItem = async ()=>{
   const orderRef = doc(db,"Orders" , orderId)
   const findProduct = products.find((product)=> product.name === productName)
   const prodInfo = {...findProduct}
+
+  console.log("product" , prodInfo)
   let totalPrice;
   let totalProfit;
   let diffPrice;
@@ -213,7 +246,12 @@ const updateOrderItem = async ()=>{
 
 
   if(productInfo.name != productName && orderItemData.quantity !==quantity){
- totalPrice = parseFloat((quantity*prodInfo.price).toFixed(2))
+ totalPrice = parseFloat((quantity*prodInfo.price ).toFixed(2))
+ if(prodInfo.discount>0){
+ 
+  totalPrice-=(totalPrice*(prodInfo.discount/100))
+ 
+ }
      totalProfit =parseFloat((quantity*prodInfo.profitPerItem).toFixed(2))
      diffPrice = totalPrice - orderItemData.totalPrice
      diffProfit = totalProfit - orderItemData.totalProfit
@@ -227,6 +265,9 @@ const updateOrderItem = async ()=>{
   }else 
   if(productInfo.name != productName && orderItemData.quantity===quantity){
      totalPrice = parseFloat((orderItemData.quantity*prodInfo.price).toFixed(2))
+     if(prodInfo.discount>0){
+      totalPrice-=(totalPrice*(prodInfo.discount))
+     }
      totalProfit =parseFloat((orderItemData.quantity*prodInfo.profitPerItem).toFixed(2))
      diffPrice = totalPrice - orderItemData.totalPrice
      diffProfit = totalProfit - orderItemData.totalProfit
@@ -242,6 +283,11 @@ const updateOrderItem = async ()=>{
 
      totalProfit = parseFloat((quantity * prodInfo.profitPerItem).toFixed(2))
      totalPrice = parseFloat((quantity * productInfo.price).toFixed(2))
+     if(prodInfo.discount>0){
+ 
+      totalPrice-=(totalPrice*(prodInfo.discount/100))
+     
+     }
      diffPrice = totalPrice - orderItemData.totalPrice
      diffProfit = totalProfit - orderItemData.totalProfit
 
@@ -253,13 +299,13 @@ const updateOrderItem = async ()=>{
   await updateDoc(orderItemRef, {
     productId:prodInfo.productId,
     quantity:quantity,
-    totalPrice:totalPrice,
-    totalProfit:totalProfit
+    totalPrice:parseFloat(totalPrice).toFixed(2),
+    totalProfit:parseFloat(totalProfit).toFixed(2)
   });
 
   await updateDoc(orderRef , {
-    totalPrice:order.totalPrice+diffPrice,
-    totalProfit:order.totalProfit+diffProfit
+    totalPrice:parseFloat(order.totalPrice+diffPrice).toFixed(2),
+    totalProfit:parseFloat(order.totalProfit+diffProfit).toFixed(2)
 
   })
 
@@ -535,6 +581,8 @@ const updateOrderItem = async ()=>{
     </div>
 
     <h4>Items</h4>
+
+
   
       {filteredOrders.length > 0 ? (
       
@@ -561,12 +609,7 @@ const updateOrderItem = async ()=>{
           <td>{order.totalPrice} $</td>
           <td>{order.totalProfit} $</td>
           </tr>
-         
-            
-          
 
-
-         
           ))}
           </tbody>
          </Table>

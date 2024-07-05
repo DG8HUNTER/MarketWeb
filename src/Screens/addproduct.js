@@ -9,9 +9,8 @@ import upload from "../Images/add_photo_alternate_outlined.svg"
 
 
 export default  function AddProduct() {
-  const { data } = useParams(); // Extract product ID from route parameter
+  const { data:storeId } = useParams(); // Extract product ID from route parameter
   const [productInfo, setProductInfo] = useState({});
-  const storeId = "AV392AHNNg8TZf5IoOKg";
   const [adding,setAdding]=useState(false)
    const [selectedImage, setSelectedImage] = useState(null);
    const [showToast, setShowToast] = useState(false);
@@ -20,6 +19,12 @@ export default  function AddProduct() {
   const handleDragOver = (event) => {
     event.preventDefault();
   };
+
+
+  const handelClick=()=>{
+document.getElementById("fileInput").click();
+
+  }
 
   const handleFileChange = (event) => {
     const droppedFile = event.target.files[0];
@@ -220,11 +225,11 @@ export default  function AddProduct() {
 <div class={" image-uploader col-md-6 d-flex flex-column  justify-content-center align-items-center mt-4 mt-md-0"}  onDragOver={handleDragOver}   onDrop={handleDrop}>
     
     <Col xs={6} sm={6} md={8} lg={7} xl={6}  > {/* Responsive breakpoints */}
-      <Image src={ productInfo.image!=null ? productInfo.image : upload } width={"400px"}  height={"400px"} className="rounded" alt="Product Image" />
+      <Image src={ productInfo.image!=null ? productInfo.image : upload } width={"400px"}  height={"400px"} className="rounded" alt="Product Image"  onClick={()=>handelClick()}/>
 
      
     </Col>
-      <input type="file" accept="image/*" onChange={handleFileChange} class={"mt-4"}   />
+      <input type="file"  id="fileInput"accept="image/*" onChange={handleFileChange} class={"mt-4"} style={{display:'none'}}   />
       
 
 

@@ -33,8 +33,10 @@ function StoreCredentialForm() {
       };
   const { data: storeId } = useParams();
 
-  const [isSubmitting  , setIsSubmitting]=useState()
-  const [isUpdating , setIsUpdating]=useState()
+  const [isSubmitting  , setIsSubmitting]=useState();
+  
+  const [isUpdating , setIsUpdating]=useState();
+  const [selectedImage , setSelectedImage]=useState(null);
 
   
 
@@ -168,7 +170,9 @@ function StoreCredentialForm() {
     const reader = new FileReader();
     reader.onload = (e) => {
       
-      setFormData({...formData , image:e.target.result})
+      //setFormData({...formData , image:e.target.result})
+
+      setSelectedImage(e.target.result)
       
     };
     reader.readAsDataURL(droppedFile);
@@ -185,7 +189,8 @@ function StoreCredentialForm() {
     const reader = new FileReader();
     reader.onload = (e) => {
       
-      setFormData({...formData,image:droppedFile})
+     // setFormData({...formData,image:droppedFile})
+     setSelectedImage(e.target.result)
 
     };
     reader.readAsDataURL(droppedFile);
@@ -273,7 +278,7 @@ console.log("Hello world")
 
 
 async function prepareStoreData(downloadURL) {
-  return {
+  const data= {
     "name": formData.name,
     "phoneNumber": formData.phoneNumber,
     "location": formData.location,
@@ -281,7 +286,6 @@ async function prepareStoreData(downloadURL) {
     "description": formData.description,
     "deliveryCharge": parseFloat(formData.deliveryCharge).toFixed(2),
     "deliveryTime": parseInt(formData.deliveryTime),
-    "image":downloadURL,
     "status": isOpen===true ? "Open" :"Closed" ,
     "storeId": storeId,
     "OperatingField":{
@@ -317,6 +321,13 @@ async function prepareStoreData(downloadURL) {
         
       }
   };
+
+  if(downloadURL!=null){
+    data.image=downloadURL
+
+  }
+
+  return data;
 }
 
 console.log(1)
@@ -335,9 +346,9 @@ console.log(1)
         setIsUpdating(true)
       }
       console.log(2);
-     let image ;
+     let data={};
 
-      if(formData.image!=null){
+      if(selectedImage!=null){
 console.log(3)
         const storage = getStorage();
 
@@ -347,7 +358,7 @@ console.log(3)
         const storageRef = ref(storage, `stores-logos/${filename}`);
   
         // Handle file conversion if needed (if using DataURL from handleDrop)
-        const imageBlob = formData.image instanceof Blob ? formData.image : await fetch(formData.image).then(r => r.blob());
+        const imageBlob = selectedImage instanceof Blob ? selectedImage : await fetch(selectedImage).then(r => r.blob());
   
         // Upload the image Blob to Firebase Storage
         const uploadTask = uploadBytesResumable(storageRef, imageBlob, {
@@ -371,29 +382,27 @@ console.log(3)
             console.log('Image URL:', downloadURL);
 
 console.log(5)
-            const data = await prepareStoreData(downloadURL)
+             data = await prepareStoreData(downloadURL)
 
             console.log(`data image  : ${data.image}`)
 
+
+  
             if(state=="add"){
               await setDoc(doc(db, "Stores", storeId), data);
             }
             else {
               const Ref = doc(db, "Stores", storeId);
               console.log("Hello update")
-
-
-await updateDoc(Ref, data)
+      
+      
+      await updateDoc(Ref, data)
             }
-
+      
            
       
-
-        
-
-          //navigation
-navigate(`/dash/${storeId}`)
-  
+      navigate(-1)
+               
            
           
 
@@ -401,9 +410,32 @@ navigate(`/dash/${storeId}`)
            
           }
         );
+      }else {
+
+        data = await prepareStoreData(null)
+        
+      if(state=="add"){
+        await setDoc(doc(db, "Stores", storeId), data);
       }
-            // Update the product document with the new image URL
-            
+      else {
+        const Ref = doc(db, "Stores", storeId);
+        console.log("Hello update")
+
+
+await updateDoc(Ref, data)
+      }
+
+     
+
+navigate(-1)
+         
+
+
+      }
+
+
+
+  
   
            
 
@@ -437,7 +469,7 @@ navigate(`/dash/${storeId}`)
         <div class="d-flex  " onClick={()=>handleClick()}>
         <input type="file" id="fileInput"  accept="image/*" onChange={handleFileChange} class={"mt-4 " }   style={{ display: 'none' }} />
 <div class=" p-2 shadow  " style={styles}>
-<img src={formData.image==null ?image : formData.image} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />
+<img src={selectedImage==null ?formData.image : selectedImage} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />
 </div>
      
         </div>
@@ -744,7 +776,7 @@ navigate(`/dash/${storeId}`)
                     maxLength={2}
                     min={1}
                     max={12} // Assuming delivery time is a number
-                    maxLength={2}
+                 
                     value={formData.openingHourWeekEnd}
                     onChange={(event) => {
                       const newValue =

@@ -1,9 +1,10 @@
 import { formatDate } from 'date-fns';
 import React, { useState } from 'react';
 import { Form, FormGroup, Label, Input, Button, Card } from 'react-bootstrap';
-
+import { collection, query, where, getDocs , querySnapshot } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
+import { db  } from '../firebase.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation
 
@@ -16,6 +17,8 @@ function SignInForm() {
 
   const [isSigningIn ,setIsSigningIn]=useState(false)
   const [signInErrorMessage  ,setSignInErrorMessage]=useState()
+
+  
 
 
 
@@ -65,16 +68,34 @@ function SignInForm() {
 
       const auth = getAuth();
       signInWithEmailAndPassword(auth, formData.email, formData.password)
-        .then((userCredential) => {
-          // Signed in 
+        .then(async (userCredential) => {
+          let isStore=false
           const store = userCredential.user.uid;
-          navigate(`/dash/${store}`)          
+          const q = query(collection(db, "Stores"));
+          const querySnapshot = await getDocs(q);
+          querySnapshot.forEach((doc) => {
+            // doc.data() is never undefined for query doc snapshots
+          if(doc.id===store){
+            isStore=true;
+           
+          }
+          });
+       if(isStore==true){
+        navigate(`/dash/${store}`) 
+       }else {
+        const errorMessage = "Invalid Store Credentials ";
+          setSignInErrorMessage(errorMessage)
+
+          setIsSigningIn(false)
+       }
+                   
         })
         .catch((error) => {
             setIsSigningIn(false)
           const errorCode = error.code;
           const errorMessage = error.message;
-          setSignInErrorMessage(errorMessage)
+          setSignInErrorMessage("Invalid Credentials")
+          setIsSigningIn(false)
         });
     
     }
@@ -121,7 +142,7 @@ function SignInForm() {
                 className={` ${(errors.password ==null && signInErrorMessage==null) && "border"} rounded px-2 py-1    ${(errors.password!=null || signInErrorMessage!=null) ? "form-control is-invalid" :""}`}
               />
               {errors.password && <Form.Text className="text-danger">{errors.password}</Form.Text>}
-              {signInErrorMessage!=null && <Form.Text className="text-danger">Invalid Credential</Form.Text>}
+              {signInErrorMessage!=null && <Form.Text className="text-danger">{signInErrorMessage}</Form.Text>}
             </FormGroup>
 
             

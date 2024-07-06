@@ -38,6 +38,8 @@ function StoreCredentialForm() {
   const [isUpdating , setIsUpdating]=useState();
   const [selectedImage , setSelectedImage]=useState(null);
 
+ 
+
   
 
   const [formData, setFormData] = useState({
@@ -62,7 +64,8 @@ function StoreCredentialForm() {
     closingTimePeriodWeekDay:"PM",
     openingTimePeriodWeekEnd:"AM",
     closingTimePeriodWeekEnd:"PM",
-    status:null
+    status:null,
+    automaticUpdateStatus:null
    
     // Other credential fields
   });
@@ -90,6 +93,8 @@ function StoreCredentialForm() {
       period: period,
     };
   }
+
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,7 +125,9 @@ function StoreCredentialForm() {
             closingTimePeriodWeekEnd:getTimeComponents(docSnap.data().OperatingField["Saturday"]["ClosingTime"]).period,
             image:docSnap.data().image,
             includeSundays:docSnap.data().OperatingField["Sunday"]==null ? false :true,
-            status:docSnap.data().status
+            status:docSnap.data().status,
+            automaticUpdateStatus:docSnap.data().automaticUpdateStatus
+
            });
           setState("update"); // Update state for edit scenario
         } else {
@@ -141,10 +148,13 @@ function StoreCredentialForm() {
 
   }, [storeId]);
 
+
+
   console.log(formData.status)
   
 
   const [isOpen, setIsOpen] = useState(false);
+  const [ automaticUpdateStatus , setAutomaticUpdateStatus]=useState()
 
 
 
@@ -153,6 +163,12 @@ function StoreCredentialForm() {
       setIsOpen(formData.status === "Open"); // Set isOpen based on status
     }
   }, [formData.status]); // Dependency array: updates isOpen whenever formData changes
+
+  useEffect(() => {
+    if (formData) {
+      setAutomaticUpdateStatus(formData.automaticUpdateStatus); // Set isOpen based on status
+    }
+  }, [formData.automaticUpdateStatus]); // Dependency array: updates isOpen whenever formData changes
 
 
   console.log(isOpen)
@@ -287,6 +303,7 @@ async function prepareStoreData(downloadURL) {
     "deliveryCharge": parseFloat(formData.deliveryCharge).toFixed(2),
     "deliveryTime": parseInt(formData.deliveryTime),
     "status": isOpen===true ? "Open" :"Closed" ,
+    "automaticUpdateStatus":automaticUpdateStatus,
     "storeId": storeId,
     "OperatingField":{
       Monday:{
@@ -460,11 +477,20 @@ navigate(-1)
 
 
 <div class="d-flex justify-content-center  align-items-center" >
-<div class="form-check form-switch mx-3">
-  <input class="form-check-input " type="checkbox" role="switch" id="flexSwitchCheckDefault"  onClick={()=>setIsOpen(!isOpen)} checked={isOpen} />
-  <label class="form-check-label" for="flexSwitchCheckDefault">Open</label>
+
+  <div class="d-flex flex-column  justify-content-start align-items-center mx-4 ">
+  <div class="form-check ">
+  <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"   onClick={()=>setAutomaticUpdateStatus(!automaticUpdateStatus)} checked={automaticUpdateStatus}/>
+  <label class="form-check-label" for="flexRadioDefault1">
+   Auto 
+  </label>
 </div>
-        
+<div class="form-check form-switch ">
+  <input class="form-check-input " type="checkbox" role="switch" id="flexSwitchCheckDefault"  onClick={()=>setIsOpen(!isOpen)} checked={isOpen} disabled={automaticUpdateStatus} />
+  <label class="form-check-label" for="flexSwitchCheckDefault">Open</label>
+</div> 
+  </div>
+  
 
         <div class="d-flex  " onClick={()=>handleClick()}>
         <input type="file" id="fileInput"  accept="image/*" onChange={handleFileChange} class={"mt-4 " }   style={{ display: 'none' }} />

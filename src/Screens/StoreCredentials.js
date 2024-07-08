@@ -418,7 +418,7 @@ console.log(5)
   
             if(state=="add"){
               await setDoc(doc(db, "Stores", storeId), data);
-               navigate(`/dash/${storeId}`, { replace: true });
+              navigate(`/dash/${storeId}`, { replace: true });
             }
             else {
               const Ref = doc(db, "Stores", storeId);
@@ -446,7 +446,7 @@ console.log(5)
         
       if(state=="add"){
         await setDoc(doc(db, "Stores", storeId), data);
-        navigate(`/dash/${storeId}`)
+        navigate(`/dash/${storeId}`, { replace: true });
 
       }
       else {
@@ -523,7 +523,7 @@ navigate(-1)
 <div class=" p-2 shadow  " style={styles}>
 
   {state=="update" ?
-  <img src={selectedImage==null ?formData.image : selectedImage} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />
+  <img src={selectedImage==null ?(formData.image!=null ? formData.image : image): selectedImage} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />
  :
 
  <img src={selectedImage==null ?image : selectedImage} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />

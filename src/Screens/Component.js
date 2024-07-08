@@ -10,10 +10,12 @@ import image from "../Images/noStoreProfile.png"
 import moment from 'moment';
 
 
+
 function MyComponent() {
 
 
   const navigate = useNavigate();
+  
 
   const {data:storeId}=useParams()
   const [ordersNum , setOrdersNum] = useState(0)
@@ -310,23 +312,49 @@ deliOrders+=1;
 
 
   return (
-    <div class={"d-flex flex-column col-12 p-3"}>
+    <div class={"d-flex flex-column col-12 p-3  "}>
 
      
 
-      <div class ="col-12 d-flex justify-content-between align-items-center">
-        <h2>{store.name}</h2>
+      <div class ="col-12 d-flex justify-content-between align-items-center mb-3">
 
-        <div class=" p-2 shadow  " style={styles}  onClick={()=>navigate(`/storeCredentials/${storeId}`)}>
+        <div class="d-flex align-items-center">
+        <Circles  height="40"
+  width="40"
+  radius="4"
+  color="blue"/>
+        <h2 class="mx-2">{store.name}</h2>
+        <Circles  height="40"
+  width="40"
+  radius="4"
+  color="red"/>
+        </div>
+        
+  <div class="d-flex   align-items-center">
+    <div class="d-flex  justify-content-center align-items-center mx-4">
+
+    <div class=" mx-1 shadow" style={{ width: '15px', height: '15px',borderRadius: '50%', backgroundColor: store.status=="Open" ? 'green' : 'red',
+
+}}>
+ 
+</div>
+<div><b>{store.status}</b></div>
+
+    </div>
+  
+  <div class=" p-2 shadow  " style={styles}  onClick={()=>navigate(`/storeCredentials/${storeId}`)}>
 <img src={store.image==null ? image : store.image} class="rounded-circle  " alt="..."  style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }}  />
 </div>
+
+
+  </div>
 
       </div>
 
 
    
 
-   <div class={"col-12 d-flex flex-column  flex-md-row justify-content-md-around align-content-center mb-2"}>
+   <div class={"col-12 d-flex flex-column  flex-md-row justify-content-md-around align-content-center mb-lg-3"}>
    <div class="card mt-2 shadow  col-12 col-md-2">
   <div class="card-body ">
     <h5 class="card-title">#Total Orders</h5>
@@ -359,7 +387,7 @@ deliOrders+=1;
 
 
    
-   <div class={"col-12 d-flex flex-column  flex-md-row justify-content-md-around align-content-center mb-2"}>
+   <div class={"col-12 d-flex flex-column  flex-md-row justify-content-md-around align-content-center mb-lg-3"}>
    <div class="card mt-2 shadow  col-12 col-md-2">
   <div class="card-body ">
     <h5 class="card-title">#Pending Orders</h5>
@@ -407,8 +435,8 @@ deliOrders+=1;
 
 
 
-   <div class="col-12 d-flex flex-column flex-md-row justify-content-around align-content-center">
-   <div class="card mt-2 shadow col-12 col-md-2">
+   <div class="col-12 d-flex flex-column flex-md-row justify-content-around align-content-center mb-lg-3">
+   <div class="card mt-2 shadow col-12 col-md-3 py-2">
   <div class="card-body">
     <h5 class="card-title">% Income Difference (Prev)</h5>
     <p class="card-text font-weight-bold h3" style={{ color: incomeGainPercentage > 0 ? '#28a745' : 'red' }}>
@@ -420,7 +448,7 @@ deliOrders+=1;
   </div>
 </div>
 
-<div class="card mt-2 shadow col-12 col-md-2">
+<div class="card mt-2 shadow col-12 col-md-3 py-2">
   <div class="card-body">
     <h5 class="card-title">% Profit Difference (Prev)</h5>
     <p class="card-text font-weight-bold h3" style={{ color: profitGainPercentage > 0 ? '#28a745' : 'red' }}>
@@ -433,18 +461,21 @@ deliOrders+=1;
 </div>
    </div>
 
+<div class="d-flex flex-column flex-md-row  justify-content-md-around   align-items-md-center ">
 
-<button class={"btn btn-primary col-md-3 mt-4"} onClick={() => handleButtonClick(storeId)}>
+<button class={"btn btn-primary col-md-3 mt-4 p-2"} onClick={() => handleButtonClick(storeId)}>
         View Product
       </button>
 
-      <button class={"btn btn-primary mt-4 col-md-3"} onClick={() => addProduct(storeId)}>
+      <button class={"btn btn-primary mt-4 col-md-3 p-2"} onClick={() => addProduct(storeId)}>
        Add Product
       </button>
 
       <button class={"btn btn-primary mt-4 col-md-3"} onClick={() => orders(storeId)}>
        Orders
       </button>
+
+</div>
 
 
     </div>

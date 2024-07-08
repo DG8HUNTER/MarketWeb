@@ -6,6 +6,7 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { db  } from '../firebase.js';
 
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation
 
 function SignInForm() {
@@ -77,11 +78,14 @@ function SignInForm() {
             // doc.data() is never undefined for query doc snapshots
           if(doc.id===store){
             isStore=true;
+            return null;
            
           }
           });
        if(isStore==true){
-        navigate(`/dash/${store}`) 
+      // navigate(`/dash/${store}` , ) 
+      navigate(`/dash/${store}`, { replace: true });
+       
        }else {
         const errorMessage = "Invalid Store Credentials ";
           setSignInErrorMessage(errorMessage)
@@ -156,7 +160,7 @@ function SignInForm() {
             </Button>
 
             <div class="d-flex justify-content-center align-items-center ">
-                <p  style={{color:"gray"}}> Don't have an account ?  <span  onClick={()=>navigate("/")} class="text-primary"> Sign Up</span></p>
+                <p  style={{color:"gray"}}> Don't have an account ?  <span  onClick={()=>navigate(`/`, { replace: true })} class="text-primary"> Sign Up</span></p>
             </div>
           </Form>
         </Card.Body>

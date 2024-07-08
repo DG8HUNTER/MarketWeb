@@ -83,8 +83,8 @@ createUserWithEmailAndPassword(auth, formData.email, formData.password)
   .then((userCredential) => {
     // Signed up 
     const store = userCredential.user.uid;
-    navigate(`/storeCredentials/${store}`)
-
+    navigate(`/storeCredentials/${store}` , {replace:true})
+   
     // ...
   })
   .catch((error) => {
@@ -164,7 +164,7 @@ createUserWithEmailAndPassword(auth, formData.email, formData.password)
             </Button>
 
             <div class="d-flex justify-content-center align-items-center ">
-                <p  style={{color:"gray"}}> Already have an account ?  <span  onClick={()=>navigate("/SignIn")} class="text-primary"> Sign In</span></p>
+                <p  style={{color:"gray"}}> Already have an account ?  <span  onClick={()=> navigate(`/SignIn`, { replace: true })} class="text-primary"> Sign In</span></p>
             </div>
           </Form>
         </Card.Body> 

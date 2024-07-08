@@ -17,7 +17,7 @@ import {
 import { getDownloadURL, ref, uploadBytes ,getStorage  , uploadBytesResumable} from 'firebase/storage';
 import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , setDoc} from 'firebase/firestore'; 
 import { db  } from '../firebase.js';
-
+import { getAuth, signOut } from "firebase/auth";
 
 
 function StoreCredentialForm() {
@@ -34,6 +34,7 @@ function StoreCredentialForm() {
   const { data: storeId } = useParams();
 
   const [isSubmitting  , setIsSubmitting]=useState();
+  
   
   const [isUpdating , setIsUpdating]=useState();
   const [selectedImage , setSelectedImage]=useState(null);
@@ -146,11 +147,21 @@ function StoreCredentialForm() {
       // Clean up logic here
     };
 
-  }, [storeId]);
+  }, []);
 
 
 
   console.log(formData.status)
+
+
+  const SignOut = ()=>{ 
+    const auth = getAuth();
+signOut(auth).then(() => {
+  navigate('/');
+}).catch((error) => {
+ console.log(`error  ${error}`)
+});
+  }
   
 
   const [isOpen, setIsOpen] = useState(false);
@@ -407,6 +418,7 @@ console.log(5)
   
             if(state=="add"){
               await setDoc(doc(db, "Stores", storeId), data);
+              navigate(`/dash/${storeId}`)
             }
             else {
               const Ref = doc(db, "Stores", storeId);
@@ -414,11 +426,12 @@ console.log(5)
       
       
       await updateDoc(Ref, data)
+      navigate(-1)
             }
       
            
       
-      navigate(-1)
+  
                
            
           
@@ -433,6 +446,8 @@ console.log(5)
         
       if(state=="add"){
         await setDoc(doc(db, "Stores", storeId), data);
+        navigate(`/dash/${storeId}`)
+
       }
       else {
         const Ref = doc(db, "Stores", storeId);
@@ -440,11 +455,11 @@ console.log(5)
 
 
 await updateDoc(Ref, data)
+navigate(-1)
       }
 
-     
 
-navigate(-1)
+
          
 
 
@@ -468,7 +483,8 @@ navigate(-1)
 
   };
   return (
-    <div class="col-12 d-flex justify-content-center align-items-center vh-md-100 p-2 p-md-0 ">
+
+    <div class="col-12 d-flex justify-content-center align-items-center vh-md-100   mt-3" >
       <div class=" col-11 col-md-9 col-lg-7 shadow p-3 rounded">
         <div class="col-12 d-flex justify-content-between align-items-center mb-2 mb-md-0">
         <h3> Store Credentials</h3>
@@ -478,7 +494,7 @@ navigate(-1)
 
 <div class="d-flex justify-content-center  align-items-center" >
 
-  <div class="d-flex flex-column  justify-content-start align-items-center mx-4 ">
+  <div class="d-flex flex-column  justify-content-start align-items-center mx-2 ">
   <div class="form-check ">
   <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"   onClick={()=>setAutomaticUpdateStatus(!automaticUpdateStatus)} checked={automaticUpdateStatus}/>
   <label class="form-check-label" for="flexRadioDefault1">
@@ -490,12 +506,30 @@ navigate(-1)
   <label class="form-check-label" for="flexSwitchCheckDefault">Open</label>
 </div> 
   </div>
-  
 
+{state=="update" &&
+  <button class="btn btn-danger mx-2 d-flex align-items-center" onClick={()=>SignOut()}>
+ Sign Out
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6" width={20} height={20}class="mx-1">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+</svg>
+
+
+  </button>
+  
+}
         <div class="d-flex  " onClick={()=>handleClick()}>
         <input type="file" id="fileInput"  accept="image/*" onChange={handleFileChange} class={"mt-4 " }   style={{ display: 'none' }} />
 <div class=" p-2 shadow  " style={styles}>
-<img src={selectedImage==null ?formData.image : selectedImage} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />
+
+  {state=="update" ?
+  <img src={selectedImage==null ?formData.image : selectedImage} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />
+ :
+
+ <img src={selectedImage==null ?image : selectedImage} class="rounded-circle  " alt="..."  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}  />
+
+  
+  }
 </div>
      
         </div>
@@ -591,7 +625,7 @@ navigate(-1)
               controlId="formBasicEmail"
               className="mb-2 col-md-3 d-flex flex-md-column"
             >
-              <label class="col-6 col-md-12  p-1 ">Minimum Charge</label>
+              <label class="col-6 col-md-12  p-1 ">Minimum Charge $</label>
               <input
                 type="number"
                 min="0"
@@ -611,7 +645,7 @@ navigate(-1)
               controlId="formBasicPassword"
               className="mb-2 col-md-3 d-flex flex-md-column"
             >
-              <label class="col-6 col-md-12 p-1">Delivery Charge</label>
+              <label class="col-6 col-md-12 p-1">Delivery Charge $</label>
               <input
                 type="number"
                 min={0}
@@ -631,7 +665,7 @@ navigate(-1)
               controlId="formBasicConfirmPassword"
               className="mb-2 col-md-3 d-flex flex-md-column"
             >
-              <label class=" col-6 col-md-12 p-1">Delivery Time</label>
+              <label class=" col-6 col-md-12 p-1">Delivery Time (Min)</label>
               <input
                 type="number"
                 name="location"
@@ -947,6 +981,7 @@ navigate(-1)
 
       </div>
     </div>
+   
   );
 }
 

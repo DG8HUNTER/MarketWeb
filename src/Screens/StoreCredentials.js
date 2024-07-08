@@ -418,7 +418,7 @@ console.log(5)
   
             if(state=="add"){
               await setDoc(doc(db, "Stores", storeId), data);
-              navigate(`/dash/${storeId}`)
+               navigate(`/dash/${storeId}`, { replace: true });
             }
             else {
               const Ref = doc(db, "Stores", storeId);

@@ -1,7 +1,7 @@
 import { formatDate } from 'date-fns';
 import React, { useState } from 'react';
 import { Form, FormGroup, Label, Input, Button, Card } from 'react-bootstrap';
-import { collection, query, where, getDocs , querySnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs , querySnapshot , getDoc ,document , doc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { db  } from '../firebase.js';
@@ -71,34 +71,45 @@ function SignInForm() {
       signInWithEmailAndPassword(auth, formData.email, formData.password)
         .then(async (userCredential) => {
           let isStore=false
-          const store = userCredential.user.uid;
-          const q = query(collection(db, "Stores"));
-          const querySnapshot = await getDocs(q);
-          querySnapshot.forEach((doc) => {
-            // doc.data() is never undefined for query doc snapshots
-          if(doc.id===store){
-            isStore=true;
-            return null;
-           
-          }
-          });
-       if(isStore==true){
-      // navigate(`/dash/${store}` , ) 
-      navigate(`/dash/${store}`, { replace: true });
-       
-       }else {
-        const errorMessage = "Invalid Store Credentials ";
-          setSignInErrorMessage(errorMessage)
+          let isAdmin=false
+          const user = userCredential.user.uid;
+          const q = doc(db, "Stores",user);
+          const q1 = doc(db, "Users",user);
+          const querySnapshot = await getDoc(q);
+          const admin = await getDoc(q1)
 
-          setIsSigningIn(false)
-       }
+          if(querySnapshot.exists()){
+            isStore=true;
+            navigate(`/dash/${user}`, { replace: true });
+
+          }
+
+          else {
+            if(admin.exists()){
+              isAdmin=true;
+
+              navigate(`/adminDash/${user}`, { replace: true });
+
+            } else {
+
+              console.log(user)
+              const errorMessage = "Invalid  Credentials ";
+              setSignInErrorMessage(errorMessage)
+              setIsSigningIn(false)
+
+            }
+
+
+
+          }
+
                    
         })
         .catch((error) => {
             setIsSigningIn(false)
           const errorCode = error.code;
           const errorMessage = error.message;
-          setSignInErrorMessage("Invalid Credentials")
+          setSignInErrorMessage(errorMessage)
           setIsSigningIn(false)
         });
     

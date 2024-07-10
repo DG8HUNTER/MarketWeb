@@ -3,7 +3,7 @@
 import React, { useState , useEffect } from 'react'
 import { useParams , useNavigate } from 'react-router-dom'
 
-
+import 'firebase/firestore';
 import { getDoc , query,collection, where, getDocs ,doc ,updateDoc , addDoc , onSnapshot, orderBy ,deleteDoc,FieldValue , increment} from 'firebase/firestore'; // Assuming Firebase v9
 import { db  } from '../firebase.js';
 
@@ -145,6 +145,7 @@ if(currentUserID!=""){
   
 
   }
+  
 
 
     const fetchOrderItemData = async (orderItemId)=>{
@@ -213,6 +214,7 @@ await updateDoc(orderRef, {
   totalItems:totalItems
 });
 
+
 await deleteDoc(doc(db, "OrderItems", orderItemData.orderItemId));
 
 setIsDeleting(false)
@@ -235,6 +237,7 @@ const updateOrderItem = async ()=>{
   setIsUpdatingOI(true)
   const orderItemRef=doc(db,"OrderItems",orderItemData.orderItemId)
   const orderRef = doc(db,"Orders" , orderId)
+  const prodRef = doc(db,"Products",orderItemData.productId)
   const findProduct = products.find((product)=> product.name === productName)
   const prodInfo = {...findProduct}
 
@@ -243,6 +246,7 @@ const updateOrderItem = async ()=>{
   let totalProfit;
   let diffPrice;
   let diffProfit;
+  let diffQuantity=0;
 
 
   if(productInfo.name != productName && orderItemData.quantity !==quantity){
@@ -255,6 +259,7 @@ const updateOrderItem = async ()=>{
      totalProfit =parseFloat((quantity*prodInfo.profitPerItem).toFixed(2))
      diffPrice = totalPrice - orderItemData.totalPrice
      diffProfit = totalProfit - orderItemData.totalProfit
+     diffQuantity=quantity-orderItemData.quantity
 
  
 
@@ -290,8 +295,15 @@ const updateOrderItem = async ()=>{
      }
      diffPrice = totalPrice - orderItemData.totalPrice
      diffProfit = totalProfit - orderItemData.totalProfit
+     diffQuantity=quantity-orderItemData.quantity
 
-   
+     console.log("Diff" , diffQuantity)
+
+     console.log("quantity" , quantity)
+
+     console.log("prev quantity" ,orderItemData.quantity )
+     
+     console.log("inventory" , prodInfo.inventory)
 
 
   }
@@ -307,6 +319,10 @@ const updateOrderItem = async ()=>{
     totalPrice:parseFloat(order.totalPrice+diffPrice).toFixed(2),
     totalProfit:parseFloat(order.totalProfit+diffProfit).toFixed(2)
 
+  })
+
+  await updateDoc(prodRef , {
+    inventory : (prodInfo.inventory - diffQuantity) 
   })
 
   const newOrderItemData = await getDoc(orderItemRef)

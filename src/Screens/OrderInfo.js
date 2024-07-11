@@ -102,6 +102,46 @@ await updateDoc(OrderRef, {
   "status":status
 });
 
+if(status=="cancelled"){
+  orderItems.forEach(async (item) => {
+  const productData = products.find((product)=> product.productId === item.productId)
+  const inventory = parseInt(productData.inventory)
+  const quantity  = parseInt(item.quantity)
+  const itemRef = doc(db,"Products",item.productId)
+
+  
+  await updateDoc(itemRef,{
+    inventory : inventory + quantity
+  });
+
+
+}
+  )
+
+}
+
+if(order.status=="cancelled"  && status!="cancelled"){
+
+  orderItems.forEach(async (item) => {
+    const productData = products.find((product)=> product.productId === item.productId)
+    const inventory = parseInt(productData.inventory)
+    const quantity  = parseInt(item.quantity)
+    const itemRef = doc(db,"Products",item.productId)
+  
+    
+    await updateDoc(itemRef,{
+      inventory : inventory - quantity
+    });
+  
+  
+  }
+    )
+  
+
+
+
+}
+
 setIsUpdating(false);
 setShowToast(true)
 
@@ -311,19 +351,22 @@ const updateOrderItem = async ()=>{
   await updateDoc(orderItemRef, {
     productId:prodInfo.productId,
     quantity:quantity,
-    totalPrice:parseFloat(totalPrice).toFixed(2),
-    totalProfit:parseFloat(totalProfit).toFixed(2)
+    totalPrice: Math.round(totalPrice * 100) / 100,
+    totalProfit: Math.round(totalProfit * 100) / 100
   });
 
   await updateDoc(orderRef , {
-    totalPrice:parseFloat(order.totalPrice+diffPrice).toFixed(2),
-    totalProfit:parseFloat(order.totalProfit+diffProfit).toFixed(2)
+    totalPrice:Math.round((order.totalPrice+diffPrice)*100)/100,
+    totalProfit:Math.round((order.totalProfit+diffProfit)*100)/100,
 
   })
 
   await updateDoc(prodRef , {
     inventory : (prodInfo.inventory - diffQuantity) 
   })
+
+  console.log(order.totalProfit);
+  console.log(diffPrice);
 
   const newOrderItemData = await getDoc(orderItemRef)
   const newOrderData = await getDoc(orderRef)
@@ -462,7 +505,7 @@ const updateOrderItem = async ()=>{
                 value={quantity}
                 min="1"
                 max={productInfo.inventory}
-                onChange={(event) => setQuantity(event.target.value)}
+                onChange={(event) => setQuantity(parseInt(event.target.value))}
                 // Add validation and error handling as needed
               />
             </div>
@@ -543,10 +586,11 @@ const updateOrderItem = async ()=>{
       <button
   type="button"
   className={`btn btn-warning me-2 text-white  ${order.status==="pending"&& "border-black border-2"} rounded d-flex flex-row justify-content-between align-items-center`}
-  onClick={() => {
+  onClick={async () => {
     setIsUpdating(true);
-    updateStatus("pending");
     setStatusToUpdate("pending");
+   await updateStatus("pending");
+    
   }}
 >
   Pending
@@ -556,38 +600,42 @@ const updateOrderItem = async ()=>{
     </span>
   )}
 </button>
-    <button type="button" className={`btn btn-info me-2 rounded ${order.status==="processing"&& "border-black border-2"} text-white d-flex flex-row justify-content-between align-items-center`}  onClick={() => {
+    <button type="button" className={`btn btn-info me-2 rounded ${order.status==="processing"&& "border-black border-2"} text-white d-flex flex-row justify-content-between align-items-center`}  onClick={async () => {
     setIsUpdating(true);
-    updateStatus("processing");
     setStatusToUpdate("processing");
+   await updateStatus("processing");
+    
   }}>Processing   {(isUpdating === true && statusToUpdate === "processing") && (
     <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
       <span className="visually-hidden">Loading...</span>
     </span>
   )}</button>
-    <button type="button" className={`btn btn-primary me-2 rounded  ${order.status==="shipped"&& "border-black border-2"} d-flex flex-row justify-content-between align-items-center`}   onClick={() => {
+    <button type="button" className={`btn btn-primary me-2 rounded  ${order.status==="shipped"&& "border-black border-2"} d-flex flex-row justify-content-between align-items-center`}   onClick={async () => {
     setIsUpdating(true);
-    updateStatus("shipped");
     setStatusToUpdate("shipped");
+   await updateStatus("shipped");
+    
   }}>Shipped {(isUpdating === true && statusToUpdate === "shipped") && (
     <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
       <span className="visually-hidden">Loading...</span>
     </span>
   )}</button>
-    <button type="button" className={`btn btn-success me-2 rounded ${order.status==="delivered"&& "border-black border-2"} d-flex flex-row justify-content-between align-items-center`}  onClick={() => {
+    <button type="button" className={`btn btn-success me-2 rounded ${order.status==="delivered"&& "border-black border-2"} d-flex flex-row justify-content-between align-items-center`}  onClick={async () => {
     setIsUpdating(true);
-    updateStatus("delivered");
     setStatusToUpdate("delivered");
+    await updateStatus("delivered");
+    
   }}>Delivered {(isUpdating === true && statusToUpdate === "delivered") && (
     <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
       <span className="visually-hidden">Loading...</span>
     </span>
   )}</button>
-    <button type="button" className={`btn btn-danger me-2 rounded  ${order.status==="cancelled"&& "border-black border-2"}  d-flex flex-row justify-content-between align-items-center`}   onClick={() => {
+    <button type="button" className={`btn btn-danger me-2 rounded  ${order.status==="cancelled"&& "border-black border-2"}  d-flex flex-row justify-content-between align-items-center`} 
+      onClick={async () => {
    
     setIsUpdating(true);
-    updateStatus("cancelled");
     setStatusToUpdate("cancelled");
+   await updateStatus("cancelled");
   }}>Cancelled {(isUpdating === true && statusToUpdate === "cancelled") && (
     <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">
       <span className="visually-hidden">Loading...</span>

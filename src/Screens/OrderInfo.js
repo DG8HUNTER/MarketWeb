@@ -242,17 +242,27 @@ const DeleteOrderItem = async ()=>{
 
  const orderRef = doc(db, "Orders", orderId);
 const orderData = await getDoc(orderRef)
-const totalProfit = parseFloat((orderData.data().totalProfit-orderItemData.totalProfit).toFixed(2)) ;
-const totalPrice = parseFloat((orderData.data().totalPrice -orderItemData.totalPrice).toFixed(2));
+const productRef = doc(db,"Products",orderItemData.productId)
+const productData = await getDoc(productRef)
+const totalProfit =Math.round((orderData.data().totalProfit-orderItemData.totalProfit)*100)/100;
+const totalPrice = Math.round((orderData.data().totalPrice -orderItemData.totalPrice)*100)/100;
 const totalItems =orderData.data().totalItems-1
 
 
 
+
 await updateDoc(orderRef, {
-  totalPrice:parseFloat(totalPrice).toFixed(2),
-  totalProfit:parseFloat(totalProfit).toFixed(2),
-  totalItems:totalItems
+  totalPrice:totalPrice,
+  totalProfit:totalProfit,
+  totalItems:totalItems,
+  
 });
+
+await updateDoc(productRef, {
+  inventory : productData.data().inventory + orderItemData.quantity
+  
+});
+
 
 
 await deleteDoc(doc(db, "OrderItems", orderItemData.orderItemId));
@@ -518,7 +528,7 @@ const updateOrderItem = async ()=>{
     </span>
                 </div> : "Update"}
               </Button>
-              <Button variant="danger" size="sm" onClick={()=>DeleteOrderItem()}>
+              <Button variant="danger" size="sm" onClick={()=>DeleteOrderItem()}  disabled={order.totalItems==1}>
                 {isDeleting===true ? <div class="d-flex justify-content-between align-items-center" >
                   Deleting
                   <span className="spinner-border spinner-border-sm mx-1" role="status" aria-hidden="true">

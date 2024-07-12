@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { collection, query, where, onSnapshot , orderBy , doc , updateDoc} from "firebase/firestore";
 import {useState , useEffect} from "react"
 import { db  } from '../firebase.js';
@@ -12,6 +12,7 @@ const{data}=useParams();
 const today = new Date();
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const navigate = useNavigate();
 
 const [totalStore , setTotalStore] = useState();
 const[storesThisMonth , setStoresThisMonth]=useState()
@@ -113,7 +114,16 @@ useEffect(() => {
 
     return(
         <div class="p-3">
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
           <h3> Admin Dashboard</h3>
+
+          <button class="btn btn-primary" onClick={()=>navigate("/")}>
+            Create Store
+          </button>
+
+          </div>
+          
 
           
     <div class={"col-12 d-flex flex-column  flex-md-row justify-content-md-around align-content-center mb-lg-3"}>

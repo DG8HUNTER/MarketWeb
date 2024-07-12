@@ -291,6 +291,8 @@ const updateOrderItem = async ()=>{
   const findProduct = products.find((product)=> product.name === productName)
   const prodInfo = {...findProduct}
 
+
+  console.log("productInfo" , findProduct)
   console.log("product" , prodInfo)
   let totalPrice;
   let totalProfit;
@@ -300,13 +302,13 @@ const updateOrderItem = async ()=>{
 
 
   if(productInfo.name != productName && orderItemData.quantity !==quantity){
- totalPrice = parseFloat((quantity*prodInfo.price ).toFixed(2))
+ totalPrice = parseFloat((quantity*prodInfo.price ))
  if(prodInfo.discount>0){
  
   totalPrice-=(totalPrice*(prodInfo.discount/100))
  
  }
-     totalProfit =parseFloat((quantity*prodInfo.profitPerItem).toFixed(2))
+     totalProfit =parseFloat((quantity*prodInfo.profitPerItem))
      diffPrice = totalPrice - orderItemData.totalPrice
      diffProfit = totalProfit - orderItemData.totalProfit
      diffQuantity=quantity-orderItemData.quantity
@@ -319,15 +321,17 @@ const updateOrderItem = async ()=>{
 
   }else 
   if(productInfo.name != productName && orderItemData.quantity===quantity){
-     totalPrice = parseFloat((orderItemData.quantity*prodInfo.price).toFixed(2))
+    
+     totalPrice = parseFloat((orderItemData.quantity*prodInfo.price))
+     console.log(`totalPrice 1  ${totalPrice}`)
      if(prodInfo.discount>0){
-      totalPrice-=(totalPrice*(prodInfo.discount))
+      totalPrice-=(totalPrice*(prodInfo.discount/100))
      }
-     totalProfit =parseFloat((orderItemData.quantity*prodInfo.profitPerItem).toFixed(2))
+     totalProfit =parseFloat((orderItemData.quantity*prodInfo.profitPerItem))
      diffPrice = totalPrice - orderItemData.totalPrice
      diffProfit = totalProfit - orderItemData.totalProfit
+     
 
-    
 
     
 
@@ -336,8 +340,8 @@ const updateOrderItem = async ()=>{
   }
   else{
 
-     totalProfit = parseFloat((quantity * prodInfo.profitPerItem).toFixed(2))
-     totalPrice = parseFloat((quantity * productInfo.price).toFixed(2))
+     totalProfit = parseFloat((quantity * prodInfo.profitPerItem))
+     totalPrice = parseFloat((quantity * productInfo.price))
      if(prodInfo.discount>0){
  
       totalPrice-=(totalPrice*(prodInfo.discount/100))
@@ -347,15 +351,30 @@ const updateOrderItem = async ()=>{
      diffProfit = totalProfit - orderItemData.totalProfit
      diffQuantity=quantity-orderItemData.quantity
 
-     console.log("Diff" , diffQuantity)
+   
 
-     console.log("quantity" , quantity)
+  }
 
-     console.log("prev quantity" ,orderItemData.quantity )
-     
-     console.log("inventory" , prodInfo.inventory)
+  if(productInfo.name != productName ){
 
 
+    const prevProductRef = doc(db,"Products" , orderItemData.productId)
+    const prevProduct = await getDoc(prevProductRef)
+    const prevProductData = {...prevProduct.data()}
+    const ProductRef = doc(db,"Products" , prodInfo.productId)
+    const Product = await getDoc(ProductRef)
+    const ProductData = {...Product.data()}
+    
+    await updateDoc(prevProductRef , {
+  inventory :  prevProductData.inventory + orderItemData.quantity
+    });
+
+    await updateDoc(ProductRef , {
+     inventory :  ProductData.inventory - quantity
+       });
+
+
+    
   }
 
   await updateDoc(orderItemRef, {
@@ -371,9 +390,13 @@ const updateOrderItem = async ()=>{
 
   })
 
+if(orderItemData.quantity!==quantity &&  productInfo.name === productName){
   await updateDoc(prodRef , {
     inventory : (prodInfo.inventory - diffQuantity) 
   })
+
+}
+ 
 
   console.log(order.totalProfit);
   console.log(diffPrice);

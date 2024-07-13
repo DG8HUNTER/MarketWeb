@@ -5,6 +5,9 @@ import { db  } from '../firebase.js';
 
 import { Table ,Image,Co , Form, Row} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+import { getAuth, signOut } from "firebase/auth"
 export function  AdminDash(){
 
 const{data}=useParams();
@@ -66,6 +69,16 @@ thisMonth+=1;
 });
 
 
+
+const SignOut = ()=>{ 
+  const auth = getAuth();
+signOut(auth).then(() => {
+navigate('/SignIn' , {replace : true});
+}).catch((error) => {
+console.log(`error  ${error}`)
+});
+}
+
 const  updateAuthorization = async (storeId , status)=>{
 
     setClickedRow(storeId)
@@ -118,9 +131,23 @@ useEffect(() => {
           <div class="d-flex justify-content-between align-items-center mb-2">
           <h3> Admin Dashboard</h3>
 
-          <button class="btn btn-primary" onClick={()=>navigate("/")}>
+
+<div class="d-flex align-items-center ">
+
+<button class="btn btn-primary mx-2" onClick={()=>navigate("/")}>
             Create Store
           </button>
+          <button class="btn btn-danger mx-2 d-flex align-items-center" onClick={()=>SignOut()}>
+ Sign Out
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6" width={20} height={20} class="mx-1">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+</svg>
+
+
+  </button>
+  
+   </div>
+          
 
           </div>
           

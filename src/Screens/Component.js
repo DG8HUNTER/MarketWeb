@@ -94,7 +94,9 @@ function MyComponent() {
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
+  const firstDayOfNextMonth = new Date(today.getFullYear(), today.getMonth()+1, 1);
 
+  console.log(`first  ${firstDayOfNextMonth}`)
  
 
 // Get the month (0-indexed) and year of the previous month
@@ -206,7 +208,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
   let prevMonthlyProfit =0;
   let pendOrders=0;
   let procOrders =0;
-  let  shipOrders=0;
+  let shipOrders=0;
   let deliOrders=0;
   let cancelOrders=0;
 
@@ -214,7 +216,7 @@ const unsubscribe = onSnapshot(q, (querySnapshot) => {
       ord.push(doc.id);
       
 
-      if(doc.data().createdAt.toDate() >= startOfMonth &&  doc.data().createdAt.toDate()<=endOfMonth ){
+      if(doc.data().createdAt.toDate() >= startOfMonth &&  doc.data().createdAt.toDate()<firstDayOfNextMonth ){
         current.push(doc.id)
         
 
@@ -240,15 +242,14 @@ deliOrders+=1;
 
         else {
           cancelOrders+=1
+          
         }
 
 
-
-
        
 
        
-      }else if (doc.data().createdAt.toDate() >= startOfPrevMonth &&  doc.data().createdAt.toDate()<=endOfPrevMonth) {
+      }else if (doc.data().createdAt.toDate() >= startOfPrevMonth &&  doc.data().createdAt.toDate()<firstDayOfNextMonth ) {
 
         if(doc.data().status=="delivered"){
           prevMonthlyIncome+=doc.data().totalPrice;
@@ -464,7 +465,7 @@ deliOrders+=1;
 <div class="d-flex flex-column flex-md-row  justify-content-md-around   align-items-md-center ">
 
 <button class={"btn btn-primary col-md-3 mt-4 p-2"} onClick={() => handleButtonClick(storeId)}>
-        View Product
+        View Products
       </button>
 
       <button class={"btn btn-primary mt-4 col-md-3 p-2"} onClick={() => addProduct(storeId)}>
@@ -472,7 +473,7 @@ deliOrders+=1;
       </button>
 
       <button class={"btn btn-primary mt-4 col-md-3"} onClick={() => orders(storeId)}>
-       Orders
+      View  Orders
       </button>
 
 </div>
